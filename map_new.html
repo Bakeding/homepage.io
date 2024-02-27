@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<title>东易物联道路巡车</title>
+<!-- <head>
+    </head> -->
+<link rel="stylesheet" href="map.css">
+
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>运输轨迹图</title>
+    <script type="text/javascript"
+        src="http://api.map.baidu.com/api?v=2.0&ak=Ok7GZAjC410fYUXKReXKtQaZnKP6Gvde"></script>
+    <script src="./axios/dist/axios.min.js"></script>
+</head>
+
+
+
+<body>
+    <!-- <div class="overlay">
+        <p>Ctrl按下</p>
+      </div>  -->
+
+    <div style="width:100%; height:100vh; border:0px solid gray" id="container">
+    </div>
+    <!-- <div>
+    <button id="saveButton">保存数组到本地</button>
+  </div> -->
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>\</th>
+                    <th>车牌</th>
+                    <th>时间</th>
+                    <th>行驶里程</th>
+                    <th>匹配度</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+
+
+    <!-- 模态框 -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modalMessage">这是一个自动关闭的提示窗口。</p>
+        </div>
+    </div>
+
+    <!-- 日期选择 -->
+    <div class="datepicker-container">
+        <form>
+            <label for="datepicker_1">起始日期:</label>
+            <input type="date" id="datepicker_1">
+            <br>
+            <label for="datepicker_2">结束日期:</label>
+            <input type="date" id="datepicker_2">
+        </form>
+    </div>
+    <!-- 下拉框 -->
+
+    <!-- 第一个下拉框 -->
+    <label for="fruitSelect_1"></label>
+    <select id="fruitSelect_1" onchange="displaySelectedFruit">
+        <option value="">线路</option>
+        <!-- 线路、细分行业、品牌、车型、 -->
+    </select>
+    <!-- 第二个下拉框 -->
+    <label for="fruitSelect_2"></label>
+    <select id="fruitSelect_2" onchange="displaySelectedFruit">
+        <option value="">细分行业</option>
+    </select>
+    <!-- 第3个下拉框 -->
+    <label for="fruitSelect_3"></label>
+    <select id="fruitSelect_3" onchange="displaySelectedFruit">
+        <option value="">品牌</option>
+        <!-- 线路、细分行业、品牌、车型、 -->
+    </select>
+    <!-- 第4个下拉框 -->
+    <label for="fruitSelect_4"></label>
+    <select id="fruitSelect_4" onchange="displaySelectedFruit">
+        <option value="">车型</option>
+    </select>
+    <!-- 第5个下拉框 -->
+    <label for="fruitSelect_5"></label>
+    <select id="fruitSelect_5" onchange="displaySelectedFruit">
+        <option value="">车牌</option>
+        <!-- 线路、细分行业、品牌、车型、 -->
+    </select>
+    <!-- 输入框 -->
+
+    <div class="input-container">
+        <input type="text" class="input-field" id="input" placeholder="">
+        <label class="input-label" for="input">请输入经纬度，以英文逗号间隔</label>
+        <button class="input-button" onclick="showInput()">查询</button>
+    </div>
+
+    <!-- 复选框 二选一-->
+    <div id="choose">
+        <div class="label-container">
+            <input type="radio" name="option" id="option1" value="A" checked>
+            <label for="option1">WGS84</label>
+        </div>
+        <div class="label-container">
+            <input type="radio" name="option" id="option2" value="B">
+            <label for="option2">Bai Du</label>
+        </div>
+    </div>
+
+
+
+    <button class="mybutton6" onclick="mybutton6_clicked()">确定</button>
+    <button class="mybutton7" onclick="mybutton7_clicked()">匹配</button>
+    <script type="text/javascript">
+
+
+
+
+
+
+
+
+
+
+
+
+
+        var Data_all = [];//没有处理的经纬度坐标
+        var classifiedData_all_mysql;
+        var classifiedData_all;//数据处理后的lng(四层树状结构)——————总分类
+        //  var classifiedData_lng_all;//按照经度四层分类
+        //  var classifiedData_lat_all;//按照纬度四层分类
+        var classifiedData_uploadtime_all;//按照日期分类————年——月——日
+        var columnall = {
+            id: [],
+            lng: [],
+            lat: [],
+            uptime: [],
+            // address:[]
+        };
+
+        var map; // 保存地图对象
+        const x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+        const a = 6378245.0;  // 长半轴
+        const ee = 0.00669342162296594323;  // 扁率
+        var data1_all = []; // 保存地图对象
+
+
+
+      
+
+        var tableBody = document.getElementById("tableBody");
+        function AddtableBody(e,a,b,c,d)
+        
+        {
+       // for (var i = 0; i < 10; i++) {
+            var row = document.createElement("tr");
+     
+            let id = document.createElement("td");
+            id.textContent = e;
+            row.appendChild(id);
+
+            var idCell = document.createElement("td");
+            idCell.textContent = a;
+            row.appendChild(idCell);
+
+            var lngCell = document.createElement("td");
+            lngCell.textContent = b;
+            row.appendChild(lngCell);
+
+            var latCell = document.createElement("td");
+            latCell.textContent = c;
+            row.appendChild(latCell);
+
+            var thistime = document.createElement("td");
+            thistime.textContent = d;
+            row.appendChild(thistime);
+
+            tableBody.appendChild(row);
+      //  }s
+
+        }
+
+ 
+
+
+
+
+
+        createMap();
+        var markerList = [];
+        // var markerList_shou = [];
+        // var markerList_auto = [];
+        var markerList_shouNoinMarkerList = [];
+        var markerList_autoNoinMarkerList = [];
+
+
+
+
+        // 创建按钮元素
+        var button = document.createElement("button");
+        button.innerHTML = "保存";
+        button.id = "myButton";
+        // 设置按钮样式
+        button.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button.style.border = "2px solid green";
+        button.style.borderRadius = "5px";
+        button.style.color = "white";
+
+        // button.style.padding = "10px 20px";
+        button.style.textAlign = "center";
+        button.style.textDecoration = "none";
+        button.style.display = "inline-block";
+        button.style.fontSize = "12px";
+        // button.style.margin = "4px 2px";
+        button.style.cursor = "pointer";
+        button.style.position = "absolute";
+        button.style.top = "100px";
+        button.style.left = "100px";
+        button.style.zIndex = "9999";
+        button.style.width = "40px"; // 设置按钮宽度为120像素
+        button.style.height = "40px"; // 设置按钮高度为40像素  
+
+
+        // 创建第2个按钮元素
+        var button1 = document.createElement("button");
+        button1.innerHTML = "打开";
+        button1.id = "myButton1";
+        // 设置按钮样式
+        button1.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button1.style.border = "2px solid green";
+        button1.style.borderRadius = "5px";
+        button1.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button1.style.textAlign = "center";
+        button1.style.textDecoration = "none";
+        button1.style.display = "inline-block";
+        button1.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button1.style.cursor = "pointer";
+        button1.style.position = "absolute";
+        button1.style.top = "140px";
+        button1.style.left = "100px";
+        button1.style.zIndex = "9999";
+        button1.style.width = "40px"; // 设置按钮宽度为120像素
+        button1.style.height = "40px"; // 设置按钮高度为40像素
+        // button1.style.backgroundImage = "url('D:/Desktop/image/Draw.png')"; // 替换为你的图片链接
+
+        // 创建第一个按钮元素
+        var button2 = document.createElement("button");
+        button2.innerHTML = "绘制";
+        button2.id = "myButton2";
+        // 设置按钮样式
+        button2.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button2.style.border = "2px solid green";
+        button2.style.borderRadius = "5px";
+        button2.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button2.style.textAlign = "center";
+        button2.style.textDecoration = "none";
+        button2.style.display = "inline-block";
+        button2.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button2.style.cursor = "pointer";
+        button2.style.position = "absolute";
+        button2.style.top = "180px";
+        button2.style.left = "100px";
+        button2.style.zIndex = "9999";
+        button2.style.width = "40px"; // 设置按钮宽度为120像素
+        button2.style.height = "40px"; // 设置按钮高度为40像素
+        // button1.style.backgroundImage = "url('D:/Desktop/image/Draw.png')"; // 替换为你的图片链接
+
+
+        // 创建第一个按钮元素
+        var button3 = document.createElement("button");
+        button3.innerHTML = "加载数据";
+        button3.id = "myButton3";
+        // 设置按钮样式
+        button3.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button3.style.border = "2px solid green";
+        button3.style.borderRadius = "5px";
+        button3.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button3.style.textAlign = "center";
+        button3.style.textDecoration = "none";
+        button3.style.display = "inline-block";
+        button3.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button3.style.cursor = "pointer";
+        button3.style.position = "absolute";
+        button3.style.top = "250px";
+        button3.style.left = "100px";
+        button3.style.zIndex = "9999";
+        button3.style.width = "40px"; // 设置按钮宽度为120像素
+        button3.style.height = "40px"; // 设置按钮高度为40像素
+
+
+        // 创建第一个按钮元素
+        var button4 = document.createElement("button");
+        button4.innerHTML = "匹配";
+        button4.id = "myButton4";
+        // 设置按钮样式
+        button4.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button4.style.border = "2px solid green";
+        button4.style.borderRadius = "5px";
+        button4.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button4.style.textAlign = "center";
+        button4.style.textDecoration = "none";
+        button4.style.display = "inline-block";
+        button4.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button4.style.cursor = "pointer";
+        button4.style.position = "absolute";
+        button4.style.top = "320px";
+        button4.style.left = "100px";
+        button4.style.zIndex = "9999";
+        button4.style.width = "40px"; // 设置按钮宽度为120像素
+        button4.style.height = "40px"; // 设置按钮高度为40像素
+
+
+
+
+        // 创建第一个按钮元素
+        var button5 = document.createElement("button");
+        button5.innerHTML = "显示道路";
+        button5.id = "myButton5";
+        // 设置按钮样式
+        button5.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button5.style.border = "2px solid green";
+        button5.style.borderRadius = "5px";
+        button5.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button5.style.textAlign = "center";
+        button5.style.textDecoration = "none";
+        button5.style.display = "inline-block";
+        button5.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button5.style.cursor = "pointer";
+        button5.style.position = "absolute";
+        button5.style.top = "390px";
+        button5.style.left = "100px";
+        button5.style.zIndex = "9999";
+        button5.style.width = "40px"; // 设置按钮宽度为120像素
+        button5.style.height = "40px"; // 设置按钮高度为40像素
+        //-----------------------button保存
+        // 添加按钮按下效果的样式
+        button.addEventListener("mousedown", function () {
+            button.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button.addEventListener("mouseup", function () {
+            button.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+            // var markerList =DrawRoute_new();
+            // 转换数组为字符串
+            var markerList_save = [];
+
+            for (var i = 0; i < markerList.length; i++) {
+                markerList_save.push(markerList[i].point.lng + ',' + markerList[i].point.lat);
+
+            }
+            markerList_save.push('flag1_start');
+            // 将markerList_shouNoinMarkerList数组存储到markerList_save数组中
+            for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                markerList_save.push(markerList_shouNoinMarkerList[i]);
+            }
+            markerList_save.push('flag1_end');
+            markerList_save.push('flag2_start');
+            for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                markerList_save.push(markerList_autoNoinMarkerList[i]);
+
+            }
+            markerList_save.push('flag2_end');
+
+            var arrayString = markerList_save.join('\n');
+
+            // 创建一个输入框用于输入文件名
+            var fileName = prompt("请输入文件名");
+
+            if (fileName) {
+                // 创建一个 Blob 对象
+                var blob = new Blob([arrayString], { type: 'text/plain' });
+
+                // 创建一个 <a> 元素
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = fileName + '.txt';
+
+                // 模拟点击下载链接
+                link.click();
+            }
+
+
+        });
+        //-----------------------button1打开
+
+        // 添加按钮按下效果的样式
+        button1.addEventListener("mousedown", function () {
+            button1.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button1.addEventListener("mouseup", function () {
+            button1.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = 'fileInput';
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const fileContent = e.target.result;
+                    // console.log(fileContent);
+
+
+                    // 按照换行符将字符串拆分成多个行
+                    const lines = fileContent.split('\n');
+
+                    // 创建数组存储结果
+                    const coordinates = [];
+                    let flag1 = [];
+                    let flag2 = [];
+
+                    // 遍历每一行
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+
+                        // 使用逗号将每一行拆分成坐标对或标记
+                        const coords = line.split(',');
+
+                        // 判断是否为标记行
+                        if (coords.length === 1) {
+                            if (line === 'flag1_start') {
+
+                                for (let j = i + 1; j < lines.length; j++) {
+
+                                    if (lines[j] != 'flag1_end') {
+                                        flag1.push(lines[j]);
+
+                                    } else {
+                                        break; // 结束循环
+                                    }
+
+                                }
+
+                            } else if (line === 'flag2_start') {
+
+
+                                for (let j = i + 1; j < lines.length; j++) {
+
+                                    if (lines[j] != 'flag2_end') {
+                                        flag2.push(lines[j]);
+
+                                    } else {
+                                        break; // 结束循环
+                                    }
+
+                                }
+
+                            }
+                        } else {
+                            const lng = parseFloat(coords[0]);
+                            const lat = parseFloat(coords[1]);
+
+                            // 将坐标对存入数组
+                            coordinates.push({ lng, lat });
+                        }
+                    }
+
+                    //   console.log(flag1);console.log(flag2);
+
+
+                    for (var i = 0; i < flag1.length; i++) {
+                        var startPoint_shou = new BMap.Point(coordinates[flag1[i] - 1].lng, coordinates[flag1[i] - 1].lat);
+                        var endPoint_shou = new BMap.Point(coordinates[flag1[i]].lng, coordinates[flag1[i]].lat);
+                        DrawRoute([startPoint_shou, endPoint_shou]);
+                        // console.log(flag1[i]);
+                    }
+
+
+                    //flag2是自动
+                    for (var i = 0; i < flag2.length; i++) {
+                        var start = new BMap.Point(coordinates[flag2[i] - 1].lng, coordinates[flag2[i] - 1].lat);
+                        var end = new BMap.Point(coordinates[flag2[i]].lng, coordinates[flag2[i]].lat);
+                        // console.log(flag2[i]);
+                        // console.log(start);
+                        getNavigationPoints(start, end);
+                    }
+
+
+
+
+                };
+
+                reader.readAsText(file);
+            });
+
+            fileInput.click();
+
+
+        });
+        // 添加按钮状态变量
+
+        //-----------------------button2绘制          
+
+        var isButtonOn2 = false;
+        var toggleClickListener = DrawRoute_new();
+        // 添加按钮点击事件
+        button2.addEventListener("click", function () {
+            isButtonOn2 = !isButtonOn2;
+            updateButtonStyle2();
+        });
+
+        // 更新按钮样式函数
+        function updateButtonStyle2() {
+
+            if (isButtonOn2) {
+                button2.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+                toggleClickListener(true); // 启用绘制功能
+            } else {
+                button2.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+                toggleClickListener(false); // 禁用绘制功能
+            }
+        }
+        //-----------------------button3数据库
+
+        // 添加按钮按下效果的样式
+        button3.addEventListener("mousedown", function () {
+            button3.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button3.addEventListener("mouseup", function () {
+            button3.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = 'fileInput';
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                Show_Tips("数据库处理中，请稍后");
+                reader.onload = function (e) {
+                    const fileContent = e.target.result;
+                    //  console.log(fileContent);
+                    //  console.log(fileContent.length);
+
+
+
+
+
+                    // 假设你已经将文件内容存储在变量 fileContent 中
+
+                    const lines = fileContent.split('\n'); // 将文件内容按换行符分割成数组
+
+                    const column1 = [];
+                    const column2 = [];
+                    const column3 = [];
+                    const column4 = [];
+                    //const column5 = [];
+
+                    for (let i = 2; i < lines.length - 2; i++) {
+                        const columns = lines[i].split('\t'); // 将每行数据按制表符分割成数组
+
+
+                        column1.push(columns[0]);//id
+                        column2.push(columns[1]);//lng
+                        column3.push(columns[2]);//lat
+                        column4.push(columns[3]);//uploadtime
+                        //column5.push(columns[4]);//address
+                    }
+                    columnall.id = column1;
+                    // columnall.lng=column2;
+                    // columnall.lat=column3;
+                    columnall.uploadtime = column4;
+                    // columnall.address=column5;
+
+
+
+                    for (let i = 0; i < column2.length; i++) {
+
+                        columnall.lng.push(transform(column2[i], column3[i]).bdLon);//经度
+                        columnall.lat.push(transform(column2[i], column3[i]).bdLat);//纬度
+
+                    }
+
+
+                    Data_all = columnall.lng.map((item, index) => new BMap.Point(item, columnall.lat[index]));
+                    classifiedData_all = classifyData_all(columnall);
+                    //classifiedData_lng_all= classifyData(columnall.lng);
+                    //classifiedData_lat_all=classifyData(columnall.lat);
+                    //classifiedData_uploadtime_all=classifyDateTime(columnall.uploadtime);
+
+                    //console.log(classifiedData_all);
+                    //    console.log(classifiedData_all[97.4][97.49][97.494][97.4944].length);
+                    Show_Tips("数据处理完毕", 1000);
+
+                };
+
+                reader.readAsText(file);
+            });
+
+            fileInput.click();
+
+        });
+
+
+
+        //-----------------------button4测试
+
+        // 添加按钮按下效果的样式
+        button4.addEventListener("mousedown", function () {
+            button4.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button4.addEventListener("mouseup", function () {
+            button4.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+            var thisstr = [];
+            var ishavedate = 0;
+
+            // 调用导航服务
+            var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+
+                //renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                    if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                        var plan = results.getPlan(0); // 获取导航方案
+                        var route = plan.getRoute(0); // 获取导航路线
+                        var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                        //输出导航路线上的道路点信息
+                        // console.log( path.length);
+                        for (var i = 1; i < path.length; i++) {//两点之间所有导航点,i=1 是因为有起始点
+                            var point_previous = path[i - 1];
+                            var point = path[i];
+                            //  console.log(path.length+"道路点：" +  path[i].lng + "," +  path[i].lat); 
+                            //  AddMark(path[i].lng,path[i].lat);
+                            var point_divide = []; var Now_Point_Class = [];
+                            var CenterPoint_11 = new BMap.Point(point_previous.lng, point_previous.lat);
+                            var CenterPoint_12 = new BMap.Point(point.lng, point.lat);
+                            var dlng = point.lng - point_previous.lng;
+                            var dlat = point.lat - point_previous.lat;
+                            var Difference = Math.sqrt(dlng * dlng + dlat * dlat);
+                            var Point_Time = Math.ceil(Difference / 0.0001);//分成多少段
+                            //  var  Point_Distance=(Difference/Point_Time);//每一段的长度
+                            for (var j = 1; j < Point_Time + 1; j++) {//每个导航点之间分的点，间隔0.0001
+                                var Now_Point = new BMap.Point(point_previous.lng + j * dlng / Point_Time, point_previous.lat + j * dlat / Point_Time);//当前点
+                                point_divide.push(Now_Point);//每个点放入到数组
+                                //console.log(Now_Point);
+                                var Now_Point_Class_center = new BMap.Point(Math.floor(point_divide[j - 1].lng * 10000) / 10000, Math.floor(point_divide[j - 1].lat * 10000) / 10000);//中心点所在组类
+                                // console.log(Now_Point_Class_center);
+                                var Now_Point_Class_1 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_2 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_3 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_4 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_5 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_6 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_7 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                var Now_Point_Class_8 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                var Now_Point_Class_9 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                Now_Point_Class.push(Now_Point_Class_1, Now_Point_Class_2, Now_Point_Class_3, Now_Point_Class_4, Now_Point_Class_5, Now_Point_Class_6, Now_Point_Class_7, Now_Point_Class_8, Now_Point_Class_9);
+
+                            }
+                            let Now_Point_Class_DeleteRepetPoint = removeDuplicatePoints(Now_Point_Class);//剔除重复方格后的新数组（两个导航点之间的所有方格中心点）              
+                            // console.log(Now_Point_Class_DeleteRepetPoint);
+                            // for(var ni=0;ni<Now_Point_Class_DeleteRepetPoint.length;ni++)
+                            // {
+                            //     AddMark(Now_Point_Class_DeleteRepetPoint[ni].lng,Now_Point_Class_DeleteRepetPoint[ni].lat);
+                            // }
+
+                            for (var k = 0; k < Now_Point_Class_DeleteRepetPoint.length; k++) {//将数组遍历一遍找到是否在数据库有这个数组，然后返回这个数据库点的信息。
+
+                                var item = new BMap.Point(Now_Point_Class_DeleteRepetPoint[k].lng, Now_Point_Class_DeleteRepetPoint[k].lat)
+                                //  console.log(item);
+                                var key1 = new BMap.Point(Math.floor(item.lng * 10) / 10, Math.floor(item.lat * 10) / 10);
+                                var key2 = new BMap.Point(Math.floor(item.lng * 100) / 100, Math.floor(item.lat * 100) / 100);
+                                var key3 = new BMap.Point(Math.floor(item.lng * 1000) / 1000, Math.floor(item.lat * 1000) / 1000);
+                                var key4 = new BMap.Point(Math.floor(item.lng * 10000) / 10000, Math.floor(item.lat * 10000) / 10000);
+                                // console.log(key1.lat,key2.lat,key3.lat,key4.lat); //不能索引界外数组。
+                                //  console.log(Array.isArray(classifiedData_lng_all)); //不能索引界外数组。
+
+                                if (
+
+                                    classifiedData_all[key1.lng] &&         // 判断第一维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng] && // 判断第二维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng][key3.lng] && // 判断第三维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng] // 判断第四维索引是否存在
+
+                                ) {
+
+                                    for (let t = 0; t < classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng].length; t++) {
+
+                                        let current_lat = Math.floor((classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lat) * 10000) / 10000;
+
+
+                                        if (current_lat == Now_Point_Class_DeleteRepetPoint[k].lat) {
+                                            ishavedate = 1;
+                                            if ((startDate_year === undefined && endDate_year === undefined) || (startDate_year == 0 && endDate_year == 0)) {
+                                                thisstr.push(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                // console.log(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                AddMark_inputcontainer1(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lng, classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lat);
+                                            } else {
+
+                                                //筛选框：
+                                                // 使用 split 方法拆分日期和时间部分
+                                                const [datePart, timePart] = (classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].uploadtime).split(' ');
+                                                // 拆分日期部分为年、月、日
+                                                const [year, month, day] = datePart.split('/').map(Number);
+                                                // console.log(year, month, day);
+                                                if (isWithinRange(year, month, day, startDate_year, startDate_month, startDate_day, endDate_year, endDate_month, endDate_day)) {
+                                                    console.log(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                }
+
+
+                                            }
+
+
+
+                                        }
+
+
+
+                                    }
+
+                                }
+
+
+
+
+
+                            }
+                        }
+
+
+
+                    }
+
+
+                    console.log(removeDuplicate(thisstr));
+                    if (ishavedate == 0) Show_Tips("无满足数据", 600);
+
+                }
+
+
+            });
+            //输出手动导航点的经纬度
+            for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                var startPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                var endPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                // 开始导航
+                driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+
+            }
+
+            for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                // console.log(startPoint_shou, endPoint_shou);
+            }
+
+
+            //剔除数组重复元素，返会新数组——————————————————————————start
+            function comparePoints(point1, point2) {
+                return point1.lng === point2.lng && point1.lat === point2.lat;
+            }
+
+            function removeDuplicatePoints(arr) {
+                let uniqueArr = [];
+
+                for (let i = 0; i < arr.length; i++) {
+                    let isDuplicate = false;
+
+                    for (let j = i + 1; j < arr.length; j++) {
+                        if (comparePoints(arr[i], arr[j])) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDuplicate) {
+                        uniqueArr.push(arr[i]);
+                    }
+                }
+
+                return uniqueArr;
+            }
+
+
+            function removeDuplicate(data) {
+                let uniqueIds = {}; // 用对象来存储唯一的id
+                let newData = [];
+                for (let i = 0; i < data.length; i++) {
+
+                    let id = data[i].id;
+                    if (!uniqueIds[id]) { // 如果id不在对象中，则说明是第一次出现，可以加入新数组
+                        uniqueIds[id] = true;
+                        newData.push(data[i]);
+                    }
+                }
+                return newData;
+            }
+
+
+            //剔除数组重复元素，返会新数组_________________________end
+
+
+
+
+
+
+
+
+        });
+
+
+
+        //----------------button5
+
+
+
+        button5.addEventListener("mousedown", function () {
+            button5.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button5.addEventListener("mouseup", function () {
+            button5.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+
+
+            const Arr = Data_all.slice(100000, 500000);
+            const newArr = Arr.filter((_, index) => index % 100 === 0);
+            map.setViewport(newArr);//视角内包括所有线路
+            DrawRoute(newArr);
+
+        });
+
+
+
+        //                 $(function() {
+        //     var page = 1; // 起始页码
+        //     var pageSize = 10000; // 每页记录数
+
+        //     function fetchData() {
+        //         $.ajax({
+        //             url: "http://localhost:8077/myindex.php",
+        //             type: 'get',
+        //             dataType: 'json',
+        //             data: {
+        //                 page: page
+        //             },
+        //             success: function(data) {
+        //                 var html = '';
+        //                 for (var i = 0; i < data.length; i++) {
+        //                     html += '<tr>'
+        //                             + '<td>' + data[i].id + '</td>'
+        //                             + '<td>' + data[i].lng + '</td>'
+        //                             + '<td>' + data[i].lat + '</td>'
+        //                             + '</tr>';
+        //                 }
+        //               //  $('#data').append(html);
+        //               data1_all.push(data);
+        //                 if (data.length === pageSize) {
+        //                     // 继续请求下一页数据
+        //                     page++;
+        //                     fetchData();
+        //                 }
+        //             },
+        //             error: function(xhr, status, error) {
+        //                 console.log(error);
+        //             }
+        //         });
+        //     }
+
+        //     fetchData();
+        // });
+        // console.log(data1_all);
+
+
+        //             document.addEventListener("DOMContentLoaded", function() {
+        //   // 添加滚轮事件监听器
+        //   window.addEventListener("wheel", handleWheelEvent);
+
+        //   function handleWheelEvent(event) {
+        //     event.preventDefault();
+
+        //     const deltaY = event.deltaY;
+
+
+        //     if (deltaY > 0) {
+        //       // 向下滚动
+        //       // 执行相应操作
+        //       console.log("向下滚动");
+        //       console.log( map.getZoom());
+        //     } else if (deltaY < 0) {
+        //       // 向上滚动
+        //       // 执行相应操作
+        //       console.log("向上滚动");
+        //       console.log( map.getZoom());
+        //     }
+
+
+        //   }
+        // });    
+
+        function mybutton6_clicked() {
+
+
+
+           //var License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
+            var License_all = ["鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rkk595",  "豫rx2585"];
+            // var License_all = ["鄂c9v670"];//109页
+           // var License_all = [  "豫rpc537"];//95页
+           // var License_all = [ "豫rdg697"];//176页
+           //var License_all = [ "豫rx2585"];//有问题
+            let currentLicenseIndex = 0;
+
+            function fetchDataForLicense(license) {
+                const batchSize = 100000;
+                let offset = 0;
+                var thisstr = [];
+                var ishavedate = 0;
+
+
+                function fetchData() {
+                    axios.post("./myindex.php", {
+                        License: license,
+                        offset: offset,
+                        limit: batchSize
+                    })
+                        .then(response => {
+                            const data = response.data;
+
+                            if (data.length > 0) {
+                                var thispoint = data.map(function (item) {
+                                    if(item.lng<116){
+
+                                    var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
+                                    var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值 
+                                      
+                                    columnall.uptime.push(item.uptime);
+                                    columnall.id.push(item.id);
+                                    columnall.lng.push(lng);
+                                    columnall.lat.push(lat);
+
+                                    }
+
+                                    return new BMap.Point(lng, lat);  // 返回 BMap.Point 对象
+                                });
+
+
+                                //杂点错点剔除算法，两者之差初步为1
+
+
+                                // classifiedData_all_mysql = classifyData_all(columnall);
+
+                                var points = [];
+
+                                for (var i = 0; i < columnall.lng.length; i += 10) {
+                              
+                                    var point = new BMap.Point(columnall.lng[i], columnall.lat[i]);
+                                    points.push(point);
+                                }
+
+                                //console.log(points);
+                                //  map.setViewport(newArr);//视角内包括所有线路
+                                DrawRoute_DiffrenteColor(points, currentLicenseIndex);
+                                //  绘图函数END
+
+
+                                // 递归调用
+                                offset += batchSize;
+                               fetchData();
+                                columnall = {
+                                    id: [],
+                                    lng: [],
+                                    lat: [],
+                                    uptime: [],
+
+                                };
+
+                            }
+                            else {
+
+
+                                Show_Tips("处理中请稍后,当前第 " + (currentLicenseIndex + 2) + " 个");
+                                
+                                // 当前表格的查询完成后，继续下一个表格的查询
+                                currentLicenseIndex++;
+                              
+
+                                if (currentLicenseIndex < License_all.length) {
+                                    fetchDataForLicense(License_all[currentLicenseIndex]);
+                                } else {
+                                    // 所有表格的查询完成后的一次性处理
+                                    console.log("所有表格查询完成");
+                                    Show_Tips("数据处理完毕", 1000);
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('发生错误：', error);
+                        });
+                }
+
+                // 第一次请求
+                fetchData();
+            }
+
+            // 开始第一个表格的查询
+            fetchDataForLicense(License_all[currentLicenseIndex]);
+             Show_Tips("处理中请稍后,当前第 1 个");
+
+
+        }
+
+
+        function Claclassify_Mysql() {
+
+            const batchSize = 100000; // 每批请求的数量
+            let offset = 0; // 数据偏移量
+
+            function fetchData() {
+                axios.post("./myindex.php", {
+                    number: 3,
+                    offset: offset, // 使用偏移量参数获取不同批次的数据
+                    limit: batchSize // 指定每次请求的数量
+                })
+                    .then(response => {
+                        const data = response.data;
+                        let resultHTML = '';
+
+                        if (data.length > 0) {
+                            var thispoint = data.map(function (item) {
+                                var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
+                                var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值   
+                                columnall.uptime.push(item.uptime);
+                                columnall.id.push(item.id);
+                                columnall.lng.push(item.lng);
+                                columnall.lat.push(item.lat);
+
+                                return new BMap.Point(lng, lat);  // 返回 BMap.Point 对象
+                            });
+
+                            classifiedData_all_mysql = classifyData_all(columnall);
+
+                            //插入start
+
+                            //插入end
+                            offset += batchSize;
+
+                            // 继续下一批请求
+                            fetchData();
+                            columnall = {
+                                id: [],
+                                lng: [],
+                                lat: [],
+                                uptime: [],
+
+                            };
+
+                        } else {
+                            console.log('没有找到匹配的记录');
+                            Show_Tips("数据处理完毕", 1000);
+
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('发生错误：', error);
+                    });
+            }
+
+            // 第一次请求
+            fetchData();
+
+        }
+
+        //http://localhost:8077/My_web/map_new.html
+
+
+
+        function mybutton7_clicked() {
+
+            if (markerList_autoNoinMarkerList.length != 0) {
+
+                var License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
+                let currentLicenseIndex = 0;
+
+                function fetchDataForLicense(license) {
+                    const batchSize = 100000;
+                    let offset = 0;
+                    var thisstr = [];
+                    var ishavedate = 0;
+
+
+                    function fetchData() {
+                        axios.post("./myindex.php", {
+                            License: license,
+                            offset: offset,
+                            limit: batchSize
+                        })
+                            .then(response => {
+                                const data = response.data;
+
+                                if (data.length > 0) {
+                                    var thispoint = data.map(function (item) {
+                                        var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
+                                        var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值   
+                                        columnall.uptime.push(item.uptime);
+                                        columnall.id.push(item.id);
+                                        columnall.lng.push(lng);
+                                        columnall.lat.push(lat);
+
+                                        return new BMap.Point(lng, lat);  // 返回 BMap.Point 对象
+                                    });
+
+                                    classifiedData_all_mysql = classifyData_all(columnall);
+                                    //   console.log(classifiedData_all_mysql);
+
+                                    //插入start
+
+                                    // 调用导航服务
+                                    var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+
+                                        //renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                                        onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                                            if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                                                var plan = results.getPlan(0); // 获取导航方案
+                                                var route = plan.getRoute(0); // 获取导航路线
+                                                var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                                                //输出导航路线上的道路点信息
+                                                // console.log( path.length);
+                                                for (var i = 1; i < path.length; i++) {//两点之间所有导航点,i=1 是因为有起始点
+                                                    var point_previous = path[i - 1];
+                                                    var point = path[i];
+
+                                                    var point_divide = []; var Now_Point_Class = [];
+                                                    var CenterPoint_11 = new BMap.Point(point_previous.lng, point_previous.lat);
+                                                    var CenterPoint_12 = new BMap.Point(point.lng, point.lat);
+                                                    var dlng = point.lng - point_previous.lng;
+                                                    var dlat = point.lat - point_previous.lat;
+                                                    var Difference = Math.sqrt(dlng * dlng + dlat * dlat);
+                                                    var Point_Time = Math.ceil(Difference / 0.0001);//分成多少段
+                                                    //  var  Point_Distance=(Difference/Point_Time);//每一段的长度
+                                                    for (var j = 1; j < Point_Time + 1; j++) {//每个导航点之间分的点，间隔0.0001
+                                                        var Now_Point = new BMap.Point(point_previous.lng + j * dlng / Point_Time, point_previous.lat + j * dlat / Point_Time);//当前点
+                                                        point_divide.push(Now_Point);//每个点放入到数组
+                                                        //console.log(Now_Point);
+                                                        var Now_Point_Class_center = new BMap.Point(Math.floor(point_divide[j - 1].lng * 10000) / 10000, Math.floor(point_divide[j - 1].lat * 10000) / 10000);//中心点所在组类
+                                                        // console.log(Now_Point_Class_center);
+                                                        var Now_Point_Class_1 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                        var Now_Point_Class_2 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                        var Now_Point_Class_3 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                        var Now_Point_Class_4 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                        var Now_Point_Class_5 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                        var Now_Point_Class_6 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                        var Now_Point_Class_7 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                        var Now_Point_Class_8 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                        var Now_Point_Class_9 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                        Now_Point_Class.push(Now_Point_Class_1, Now_Point_Class_2, Now_Point_Class_3, Now_Point_Class_4, Now_Point_Class_5, Now_Point_Class_6, Now_Point_Class_7, Now_Point_Class_8, Now_Point_Class_9);
+
+                                                    }
+                                                    let Now_Point_Class_DeleteRepetPoint = removeDuplicatePoints(Now_Point_Class);//剔除重复方格后的新数组（两个导航点之间的所有方格中心点）              
+
+                                                    for (var k = 0; k < Now_Point_Class_DeleteRepetPoint.length; k++) {//将数组遍历一遍找到是否在数据库有这个数组，然后返回这个数据库点的信息。
+
+                                                        var item = new BMap.Point(Now_Point_Class_DeleteRepetPoint[k].lng, Now_Point_Class_DeleteRepetPoint[k].lat)
+
+                                                        var key1 = new BMap.Point(Math.floor(item.lng * 10) / 10, Math.floor(item.lat * 10) / 10);
+                                                        var key2 = new BMap.Point(Math.floor(item.lng * 100) / 100, Math.floor(item.lat * 100) / 100);
+                                                        var key3 = new BMap.Point(Math.floor(item.lng * 1000) / 1000, Math.floor(item.lat * 1000) / 1000);
+                                                        var key4 = new BMap.Point(Math.floor(item.lng * 10000) / 10000, Math.floor(item.lat * 10000) / 10000);
+
+
+                                                        //     classifiedData_all_mysql分类在此
+                                                        if (
+
+                                                            classifiedData_all_mysql[key1.lng] &&         // 判断第一维索引是否存在
+                                                            classifiedData_all_mysql[key1.lng][key2.lng] && // 判断第二维索引是否存在
+                                                            classifiedData_all_mysql[key1.lng][key2.lng][key3.lng] && // 判断第三维索引是否存在
+                                                            classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng] // 判断第四维索引是否存在
+
+                                                        ) {
+
+                                                            for (let t = 0; t < classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng].length; t++) {
+                                                                // console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][0]);
+                                                                let current_lat = Math.floor((classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lat) * 10000) / 10000;
+
+                                                                if (current_lat == Now_Point_Class_DeleteRepetPoint[k].lat) {
+                                                                    ishavedate = 1;
+
+                                                                    if ((startDate_year === undefined && endDate_year === undefined) || (startDate_year == 0 && endDate_year == 0)) {
+                                                                        thisstr.push(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                                        // console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                                        // AddMark_inputcontainer1(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lng,classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lat);
+                                                                    } else {
+
+                                                                        //筛选框：
+                                                                        // 使用 split 方法拆分日期和时间部分
+                                                                        const [datePart, timePart] = (classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].uploadtime).split(' ');
+                                                                        // 拆分日期部分为年、月、日
+                                                                        const [year, month, day] = datePart.split('/').map(Number);
+                                                                        // console.log(year, month, day);
+                                                                        if (isWithinRange(year, month, day, startDate_year, startDate_month, startDate_day, endDate_year, endDate_month, endDate_day)) {
+                                                                            console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                                        }
+
+
+                                                                    }
+
+
+
+                                                                }
+
+
+
+                                                            }
+
+                                                        }
+
+
+
+
+
+                                                    }
+                                                }
+
+
+
+                                            }
+
+
+                                            // console.log(thisstr);//确保最后输出的数组内元素唯一
+                                            // if( ishavedate==0) Show_Tips("无满足数据",600);
+
+                                        }
+
+
+                                    });
+
+                                    //输出手动导航点的经纬度
+                                    for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                                        var startPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                                        var endPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                                        // 开始导航
+
+
+                                        driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+
+
+                                    }
+
+                                    for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                                        var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                                        var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                                        // console.log(startPoint_shou, endPoint_shou);
+                                    }
+
+
+                                    //剔除数组重复元素，返会新数组——————————————————————————start
+                                    function comparePoints(point1, point2) {
+                                        return point1.lng === point2.lng && point1.lat === point2.lat;
+                                    }
+                                    //剔除重复网格
+                                    function removeDuplicatePoints(arr) {
+                                        let uniqueArr = [];
+
+                                        for (let i = 0; i < arr.length; i++) {
+                                            let isDuplicate = false;
+
+                                            for (let j = i + 1; j < arr.length; j++) {
+                                                if (comparePoints(arr[i], arr[j])) {
+                                                    isDuplicate = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!isDuplicate) {
+                                                uniqueArr.push(arr[i]);
+                                            }
+                                        }
+
+                                        return uniqueArr;
+                                    }
+
+
+
+                                    //剔除数组重复元素，返会新数组_________________________end
+
+
+
+
+                                    //插入end
+
+
+                                    // 递归调用
+
+                                    offset += batchSize;
+                                    fetchData();
+                                    columnall = {
+                                        id: [],
+                                        lng: [],
+                                        lat: [],
+                                        uptime: [],
+
+                                    };
+
+                                } else {
+
+
+                                    // Show_Tips("数据处理完毕", 1000);
+
+                                    console.log(removeDuplicate(thisstr));//确保最后输出的数组内元素唯一
+
+                                    function removeDuplicate(data) {
+                                        let uniqueIds = {}; // 用对象来存储唯一的id
+                                        let newData = [];
+                                        for (let i = 0; i < data.length; i++) {
+
+                                            let id = data[i].id;
+                                            if (!uniqueIds[id]) { // 如果id不在对象中，则说明是第一次出现，可以加入新数组
+                                                uniqueIds[id] = true;
+                                                newData.push(data[i]);
+                                            }
+                                        }
+                                        return newData;
+                                    }
+
+                                    Show_Tips("处理中请稍后,当前第 " + (currentLicenseIndex + 2) + " 个");
+                                    // 当前表格的查询完成后，继续下一个表格的查询
+                                    currentLicenseIndex++;
+                                    if(removeDuplicate(thisstr).length!=0)
+                                    {
+                                        AddtableBody(currentLicenseIndex,License_all[currentLicenseIndex-1],"NULL","NULL","100%");
+                                    }
+                                    
+                                    if (currentLicenseIndex < License_all.length) {
+                                        fetchDataForLicense(License_all[currentLicenseIndex]);
+                                    } else {
+                                        // 所有表格的查询完成后的一次性处理
+                                        console.log("所有表格查询完成");
+                                        Show_Tips("数据处理完毕", 1000);
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('发生错误：', error);
+                            });
+                    }
+
+                    // 第一次请求
+                    fetchData();
+                }
+
+                // 开始第一个表格的查询
+                fetchDataForLicense(License_all[currentLicenseIndex]);
+                Show_Tips("处理中请稍后,当前第 1 个");
+            }
+            else {
+                Show_Tips("请先绘制或加载路线", 800)
+            }
+        }
+
+
+
+
+
+
+
+
+
+        // 将按钮添加到页面中
+        document.body.appendChild(button);
+        // 将按钮添加到页面中
+        document.body.appendChild(button1);
+        document.body.appendChild(button2);
+        document.body.appendChild(button3);
+        document.body.appendChild(button4);
+        document.body.appendChild(button5);
+
+
+
+
+
+        //输入框
+        function showInput() {
+            var input = document.getElementById("input").value;
+            var pattern = /^(\d+\.\d+,\d+\.\d+|\d+,\d+|\d+\.\d+,\d+|\d+,\d+\.\d+)$/;
+            if (pattern.test(input)) {
+                var arr = input.split(",");
+
+                var option1 = document.getElementById("option1");
+                var option2 = document.getElementById("option2");
+                if (option1.checked) {
+                    AddMark_inputcontainer(arr[0], arr[1], 1);
+                } else {
+
+                    AddMark_inputcontainer(arr[0], arr[1], 0);
+
+                }
+            }
+
+            else
+                Show_Tips("输入格式错误", 400);
+
+        }
+
+
+        //日期是否在范围之内
+        function isWithinRange(year, month, day, startYear, startMonth, startDay, endYear, endMonth, endDay) {
+            var startDate = new Date(startYear, startMonth - 1, startDay);
+            var endDate = new Date(endYear, endMonth - 1, endDay);
+            var date = new Date(year, month - 1, day);
+
+            return date >= startDate && date <= endDate;
+        }
+
+        //数据预分类
+        function classifyData_all(data) {
+            const classified = {};
+
+            for (let i = 0; i < data.lng.length; i++) {
+                const key1 = Math.floor(data.lng[i] * 10) / 10;
+                const key2 = Math.floor(data.lng[i] * 100) / 100;
+                const key3 = Math.floor(data.lng[i] * 1000) / 1000;
+                const key4 = Math.floor(data.lng[i] * 10000) / 10000;
+
+                if (!classified[key1]) {
+                    classified[key1] = [];
+                }
+
+                if (!classified[key1][key2]) {
+                    classified[key1][key2] = [];
+                }
+
+                if (!classified[key1][key2][key3]) {
+                    classified[key1][key2][key3] = [];
+                }
+
+                if (!classified[key1][key2][key3][key4]) {
+                    classified[key1][key2][key3][key4] = [];
+                }
+
+                classified[key1][key2][key3][key4].push({
+                    id: data.id[i],
+                    lng: data.lng[i],
+                    lat: data.lat[i],
+                    uptime: data.uptime[i],
+                    // address:data.address[i],
+
+                });
+            }
+
+            return classified;
+        }
+
+
+
+        //数据预分类  lng lat
+        function classifyData(data) {
+            const classified = {};
+
+            for (const item of data) {
+                const key1 = Math.floor(item * 10) / 10;
+                const key2 = Math.floor(item * 100) / 100;
+                const key3 = Math.floor(item * 1000) / 1000;
+                const key4 = Math.floor(item * 10000) / 10000;
+
+                if (!classified[key1]) {
+                    classified[key1] = {};
+                }
+
+                if (!classified[key1][key2]) {
+                    classified[key1][key2] = [];
+                }
+
+                if (!classified[key1][key2][key3]) {
+                    classified[key1][key2][key3] = [];
+                }
+
+                if (!classified[key1][key2][key3][key4]) {
+                    classified[key1][key2][key3][key4] = [];
+                }
+
+                classified[key1][key2][key3][key4].push(item);
+            }
+
+            return classified;
+        }
+
+
+        //数据预分类  uploadtime
+        function classifyDateTime(data) {
+            const classified = {};
+
+            for (const dateTimeString of data) {
+                const [datePart, timePart] = dateTimeString.split(' ');
+                const [year, month, day] = datePart.split('/').map(Number);
+                const [hour] = timePart.split(':').map(Number);
+
+                if (!classified[year]) {
+                    classified[year] = {};
+                }
+
+                if (!classified[year][month]) {
+                    classified[year][month] = {};
+                }
+
+                if (!classified[year][month][day]) {
+                    classified[year][month][day] = {};
+                }
+
+                if (!classified[year][month][day][hour]) {
+                    classified[year][month][day][hour] = [];
+                }
+
+                classified[year][month][day][hour].push(dateTimeString);
+            }
+
+            return classified;
+        }
+
+        //经纬度转平面直角坐标系（墨卡托投影）
+        function geoToPlane(lon, lat) {
+            var x = lon * 20037508.34 / 180; // 经度转换为x坐标
+            var y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+            y = y * 20037508.34 / 180; // 纬度转换为y坐标
+
+            var point = { x: x, y: y };
+            return point;
+        }
+        //平面直角坐标系（墨卡托投影）转 经纬度
+        function planeToGeo(x, y) {
+            var lng = x / 20037508.34 * 180; // x坐标转换为经度
+            var lat = y / 20037508.34 * 180; // y坐标转换为纬度
+            lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2); // 转换为正确的纬度值
+
+            var point = { lng: lng, lat: lat };
+            return point;
+        }
+        //计算两点之间的距离平面直角坐标系（墨卡托投影
+        function calculateDistance_xy(x1, y1, x2, y2) {
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+
+
+
+
+
+
+
+
+
+
+        // 创建地图函数
+        function createMap() {
+            // 如果地图对象不存在，创建地图
+            map = new BMap.Map("container");
+            map.centerAndZoom(new BMap.Point(105, 35), 6);
+            map.addControl(new BMap.NavigationControl());               // 添加平移缩放控件
+            map.addControl(new BMap.ScaleControl());                    // 添加比例尺控件
+            map.addControl(new BMap.OverviewMapControl());              // 添加缩略地图控件
+            map.enableScrollWheelZoom(true);
+            // 初始化地图大小
+            resizeMap();
+            // 监听窗口大小变化事件，以动态调整地图大小
+            window.addEventListener("resize", resizeMap);
+        }
+
+
+
+
+
+
+
+
+
+
+
+        function createroad() {
+
+
+
+            var markerList = [];
+            var polyline = null;
+
+            map.addEventListener("rightclick", function (e) {
+                var point = new BMap.Point(e.point.lng, e.point.lat);
+                var marker = new BMap.Marker(point);
+
+                marker.addEventListener("click", function () {
+                    // 左击事件监听器
+                    alert("图标已放置");
+                    marker.disableDragging();  // 禁止拖拽
+                });
+
+                marker.addEventListener("rightclick", function () {
+                    // 右击事件监听器
+                    map.removeOverlay(marker);  // 取消图标
+                    var index = markerList.indexOf(marker);
+                    if (index !== -1) {
+                        markerList.splice(index, 1);
+                        if (markerList.length > 1) {
+                            polyline.setPath(markerList.map(function (m) { return m.getPosition(); }));
+                        } else {
+                            map.removeOverlay(polyline);
+                            polyline = null;
+                        }
+                    }
+                });
+
+                marker.enableDragging();
+                map.addOverlay(marker);
+                markerList.push(marker);
+
+                if (markerList.length > 1) {
+                    if (!polyline) {
+                        polyline = new BMap.Polyline(markerList.map(function (m) { return m.getPosition(); }), { strokeColor: "red", strokeWeight: 3, strokeOpacity: 0.8 });
+                        map.addOverlay(polyline);
+                    } else {
+                        polyline.setPath(markerList.map(function (m) { return m.getPosition(); }));
+                    }
+
+                    // 获取相邻两个点的经纬度坐标
+                    var prevIndex = markerList.length - 2;
+                    var prevPoint = markerList[prevIndex].getPosition();
+                    var curPoint = markerList[markerList.length - 1].getPosition();
+
+                    // 创建驾车路线规划对象
+                    var driving = new BMap.DrivingRoute(map, { renderOptions: { map: map, autoViewport: true } });
+
+
+                    // 隐藏起点和终点标记
+                    driving.setMarkersSetCallback(function (pois) {
+                        for (var i = 0; i < pois.length; i++) {
+                            pois[i].marker.hide();
+                        }
+                    });
+
+
+                    // 根据相邻两个点的经纬度坐标进行驾车路线规划
+                    driving.search(prevPoint, curPoint);
+                }
+            });
+
+            // 删除上一个点
+            function deleteLastMarker() {
+                if (markerList.length > 0) {
+                    var lastMarker = markerList.pop();
+                    map.removeOverlay(lastMarker);
+                    if (markerList.length > 1) {
+
+                        polyline.setPath(markerList.map(function (m) { return m.getPosition(); }));
+                    } else {
+                        map.removeOverlay(polyline);
+                        polyline = null;
+                    }
+
+
+                }
+            }
+
+            // 监听键盘事件
+            document.addEventListener("keydown", function (e) {
+                if (e.code === "Delete") {
+                    deleteLastMarker();
+                    //map.clearOverlays();
+                }
+            });
+
+
+        }
+
+
+        function Test() {
+
+            // 设置起点和终点坐标
+            var startPoint = new BMap.Point(96.397128, 39.916527); // 设置起点坐标，这里是北京天安门的经纬度
+            var endPoint = new BMap.Point(96.406605, 39.915137); // 设置终点坐标，这里是北京王府井的经纬度
+
+            // 调用导航服务
+            var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+                renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                    if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                        var plan = results.getPlan(0); // 获取导航方案
+                        var route = plan.getRoute(0); // 获取导航路线
+                        var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                        //输出导航路线上的道路点信息
+                        for (var i = 0; i < path.length; i++) {
+                            var point = path[i];
+                            console.log("道路点：" + point.lng + "," + point.lat);
+
+                        }
+
+                        console.log(path.length);
+
+                    }
+                }
+            });
+
+            // 开始导航
+            driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+
+        }
+
+        function funfufn() {
+
+
+            // 开启鼠标右键监听
+            map.addEventListener("rightclick", function (e) {
+                // 创建点标记
+                var marker = new BMap.Marker(e.point);
+
+                // 将点标记添加到地图上
+                map.addOverlay(marker);
+
+                // 获取点标记的经纬度坐标
+                var point = marker.getPosition();
+
+                // 将点坐标添加到数组中
+                points.push(point);
+
+                // 更新导航路线
+                updateNavigation();
+            });
+
+            // 监听键盘事件
+            document.onkeydown = function (e) {
+                if (e.key === "Delete" || e.key === "Backspace") {
+                    driving.clearResults();
+
+                    // 删除最后一个点
+                    points.pop();
+
+                    updateNavigation();
+                    map.clearOverlays();
+                }
+            };
+
+            // 创建驾车导航示例
+            var driving = new BMap.DrivingRoute(map, { renderOptions: { map: map, autoViewport: true } });
+
+            // 定义存储点标记的数组
+            var markers = [];
+
+            // 定义存储点坐标的数组
+            var points = [];
+
+
+            // 更新导航路线
+            function updateNavigation() {
+                // 清除地图上的所有点标记
+                for (var i = 0; i < markers.length; i++) {
+                    map.removeOverlay(markers[i]);
+                }
+                markers = [];
+
+                // 绘制所有点标记
+                for (var i = 0; i < points.length; i++) {
+                    var marker = new BMap.Marker(points[i]);
+                    markers.push(marker);
+                    map.addOverlay(marker);
+                }
+
+                if (points.length < 2) {
+                    return;
+                }
+
+                // 设置起点和终点
+                var start = points[0];
+                var end = points[points.length - 1];
+
+                // 设置途径点（如果有）
+                var waypoints = points.slice(1, -1).length > 0 ? points.slice(1, -1) : null;
+
+                // 开始导航
+                driving.search(start, end, { waypoints: waypoints });
+
+
+            }
+        }
+
+
+
+
+
+
+
+        function Conversion(lon, lat, mark) {
+
+
+            var ggPoint = new BMap.Point(transform(lon, lat).bdLon, transform(lon, lat).bdLat);
+
+            if (mark == 0 || mark == 1) {
+                // 添加谷歌marker和label
+                var markergg = new BMap.Marker(ggPoint);
+                map.addOverlay(markergg); // 添加谷歌marker
+                if (mark == 0) {
+                    var labelgg = new BMap.Label("我的位置", { offset: new BMap.Size(20, -10) });
+                }
+                if (mark == 1) {
+                    var labelgg = new BMap.Label("我的定位", { offset: new BMap.Size(20, -10) });
+                }
+
+                markergg.setLabel(labelgg); // 添加label
+                map.setCenter(markergg);
+
+            }
+
+
+
+        }
+
+
+
+        //获取输入位置
+        function updateMapLocation1(lng, lat) {
+            var newPoint = new BMap.Point(lng, lat);
+            //  map.panTo(newPoint);
+            // 你还可以添加标记或者做其他操作
+            Conversion(lng, lat, 1);
+        }
+
+
+        //定位
+        function updateMapLocation(lng, lat) {
+            var newPoint = new BMap.Point(lng, lat);
+            //map.panTo(newPoint);
+            // 你还可以添加标记或者做其他操作
+            Conversion(lng, lat, 0);
+        }
+
+        //道路匹配用
+        function updateMapLocation_onlyRoad(lng, lat) {
+            var newPoint = new BMap.Point(lng, lat);
+            //  map.panTo(newPoint);
+            // 你还可以添加标记或者做其他操作
+            Conversion(lng, lat, 2);
+        }
+
+
+        //——————————————————————————————————————————————————————————————————————————————  
+        // 定义绘制路线的函数
+        function drawRoute() {
+            // 生成坐标点
+            var trackPoint = [];
+            for (var i = 0; i < points.length; i++) {
+                trackPoint.push(new BMap.Point(points[i].lng, points[i].lat));
+            }
+
+            // 如果路线已存在，先清除
+            //if (polyline) {
+            //    map.removeOverlay(polyline);
+            //}
+
+            // 创建路线
+            polyline = new BMap.Polyline(trackPoint, { strokeColor: "yellow", strokeWeight: 6, strokeOpacity: 1 });
+            map.addOverlay(polyline);
+        }
+
+        // 定义绘制新点的函数
+        function drawNewPoint(lng, lat) {
+            // 添加新的点坐标到 points 数组中
+            var newPoint = { lng: lng, lat: lat };
+            points.push(newPoint);
+
+
+            // 如果超过最大长度，删除最早的点坐标
+            if (points.length > 10) {
+                points.splice(0, points.length - 10);
+            }
+
+            // 调用绘制路线函数以绘制新的路线
+            drawRoute();
+            // 获取最后一个点的坐标
+            var lastPoint = new BMap.Point(lng, lat);
+
+            // 计算地图视野以包含整个路线
+            var view = map.getViewport(points);
+
+            // 调整视野以确保最后一个点在地图中央
+            var centerPoint = view.center;
+            map.centerAndZoom(centerPoint, view.zoom);
+            map.setCenter(lastPoint);
+
+        }
+
+        //——————————————————————————————————————————————————————————————————下面是自己实现绘路代码
+
+        function mydrawRoute() {
+            // 生成坐标点
+            var trackPoint = [];
+            for (var i = 0; i < points.length; i++) {
+                trackPoint.push(new BMap.Point(points[i].lng, points[i].lat));
+            }
+
+            // 如果路线已存在，先清除
+            if (polyline) {
+                map.removeOverlay(polyline);
+            }
+
+            // 创建路线
+            polyline = new BMap.Polyline(trackPoint, { strokeColor: "green", strokeWeight: 6, strokeOpacity: 1 });
+            map.addOverlay(polyline);
+
+
+
+        }
+
+        //道路规划，传入道路经纬度，然后画出地图
+        // myConversion(109.308434,1);
+        // myConversion(109.308434,2);
+        // myConversion(109.308434,3);
+
+        function mydrawNewPoint(lng, lat) {
+            // 添加新的点坐标到 points 数组中
+            var newPoint = { lng: lng, lat: lat };
+            points.push(newPoint);
+
+
+            // 如果超过最大长度，删除最早的点坐标
+            if (points.length > 10) {
+                points.splice(0, points.length - 10);
+            }
+
+            // 调用绘制路线函数以绘制新的路线
+            drawRoute();
+            // 获取最后一个点的坐标
+            var lastPoint = new BMap.Point(lng, lat);
+
+            // 计算地图视野以包含整个路线
+            var view = map.getViewport(points);
+
+            // 调整视野以确保最后一个点在地图中央
+            var centerPoint = view.center;
+            map.centerAndZoom(centerPoint, view.zoom);
+            map.setCenter(lastPoint);
+
+        }
+
+        function DeleteRoute() {
+            points = [];
+            // 删除地图上的路线
+            map.clearOverlays();
+            points.splice(0, points.length);
+        }
+        //仅供坐标转换
+
+        //============================================================大地转百度
+
+
+
+
+        // 转换函数WGS84转百度
+        function transform(wgLon, wgLat) {
+
+            let mgLon, mgLat;
+
+            if (outOfChina(wgLon, wgLat)) {
+                mgLon = wgLon;
+                mgLat = wgLat;
+                return { bdLon: mgLon, bdLat: mgLat };
+            }
+            let dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
+            let dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
+            let radLat = wgLat / 180.0 * Math.PI;
+            let magic = Math.sin(radLat);
+            magic = 1 - ee * magic * magic;
+            let sqrtMagic = Math.sqrt(magic);
+            dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+            dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+            mgLat = Number(wgLat) + Number(dLat);
+            mgLon = Number(wgLon) + Number(dLon);
+            let bdLat, bdLon;
+            let z = Math.sqrt(mgLon * mgLon + mgLat * mgLat) + 0.00002 * Math.sin(mgLat * x_pi);
+            let theta = Math.atan2(mgLat, mgLon) + 0.000003 * Math.cos(mgLon * x_pi);
+            bdLon = z * Math.cos(theta) + 0.0065;
+            bdLat = z * Math.sin(theta) + 0.006;
+
+            // mydrawNewPoint(bdLon,bdLat);
+            // console.log(bdLon);
+            return { bdLon: bdLon, bdLat: bdLat };
+        }
+
+
+
+        //判断是否在中国境内
+        function outOfChina(lon, lat) {
+            if (lon < 72.004 || lon > 137.8347) {
+                return true;
+            }
+            if (lat < 0.8293 || lat > 55.8271) {
+                return true;
+            }
+            return false;
+        }
+
+        // 转换纬度
+        function transformLat(x, y) {
+            let lat = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+            lat += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+            lat += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+            lat += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+            return lat;
+        }
+
+        // 转换经度
+        function transformLon(x, y) {
+            let lon = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+            lon += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+            lon += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+            lon += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+            return lon;
+        }
+
+
+        //============================================================大地转百度
+
+        //============================================================以下函数只为匹配服务
+
+        function mydrawNewPoint11(lng, lat) {
+            // 添加新的点坐标到 points 数组中
+            var newPoint = { lng: lng, lat: lat };
+            points1.push(newPoint);
+
+
+            // 如果超过最大长度，删除最早的点坐标
+            if (points1.length > 10) {
+                points1.splice(0, points1.length - 10);
+            }
+
+            // 调用绘制路线函数以绘制新的路线
+            //  drawRoute(); 
+            // 获取最后一个点的坐标
+            var lastPoint = new BMap.Point(lng, lat);
+
+            // 计算地图视野以包含整个路线
+            var view = map.getViewport(points1);
+
+            // 调整视野以确保最后一个点在地图中央
+            var centerPoint = view.center;
+            map.centerAndZoom(centerPoint, view.zoom);
+            map.setCenter(lastPoint);
+
+        }
+        // 转换函数
+        function transform11(wgLon, wgLat) {
+
+            let mgLon, mgLat;
+            if (outOfChina(wgLon, wgLat)) {
+                mgLon = wgLon;
+                mgLat = wgLat;
+                return { bdLon: mgLon, bdLat: mgLat };
+            }
+            let dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
+            let dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
+            let radLat = wgLat / 180.0 * Math.PI;
+            let magic = Math.sin(radLat);
+            magic = 1 - ee * magic * magic;
+            let sqrtMagic = Math.sqrt(magic);
+            dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+            dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+            mgLat = wgLat + dLat;
+            mgLon = wgLon + dLon;
+            let bdLat, bdLon;
+            let z = Math.sqrt(mgLon * mgLon + mgLat * mgLat) + 0.00002 * Math.sin(mgLat * x_pi);
+            let theta = Math.atan2(mgLat, mgLon) + 0.000003 * Math.cos(mgLon * x_pi);
+            bdLon = z * Math.cos(theta) + 0.0065;
+            bdLat = z * Math.sin(theta) + 0.006;
+
+            mydrawNewPoint11(bdLon, bdLat);
+            // console.log(bdLon);
+            return { bdLon: bdLon, bdLat: bdLat };
+        }
+
+        //道路匹配用
+        function Mark(lng, lat) {
+            var newPoint = new BMap.Point(lng, lat);
+            //  map.panTo(newPoint);
+            // 你还可以添加标记或者做其他操作
+
+            var ggPoint = new BMap.Point(transform11(lng, lat).bdLon, transform11(lng, lat).bdLat);
+
+
+            // 添加谷歌marker和label
+            var markergg = new BMap.Marker(ggPoint);
+            map.addOverlay(markergg); // 添加谷歌marker
+
+            markergg.setLabel(labelgg); // 添加label
+            map.setCenter(markergg);
+
+        }
+
+
+
+
+
+
+        function BDMark() {
+
+            // 创建点数组
+            var points = [];
+            for (var i = 0; i < 10; i++) { // 注意：只需要循环9次，因为最后一个点没有下一个点了，不能再连线了
+                var start = new BMap.Point(100.09 + 0.1 * i, 30.45 + 0.1 * i);
+                var end = new BMap.Point(100.09 + 0.1 * (i + 1), 30.45 + 0.1 * (i + 1));
+                var line = new BMap.Polyline([start, end], { strokeColor: "blue", strokeWeight: 3, strokeOpacity: 0.5 }); // 创建线段对象
+                var marker = new BMap.Marker(start); // 创建起始点的标记
+                points.push(start); // 将起始点添加到点数组中
+                points.push(end); // 将终止点添加到点数组中
+                map.addOverlay(line); // 将线段添加到地图中
+                map.addOverlay(marker); // 将起始点的标记添加到地图中
+            }
+
+            // 设置地图中心点和缩放级别
+            var centerPoint = points[Math.floor(points.length / 2)]; // 取中间的点作为中心点
+            map.centerAndZoom(centerPoint, 13);
+
+        }
+
+
+
+
+
+        // 自适应地图大小
+        function resizeMap() {
+            var container = document.getElementById("container");
+            var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+            var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            container.style.width = viewportWidth + "px";
+            container.style.height = viewportHeight + "px";
+            map.setViewport();
+        }
+
+
+
+
+
+
+
+        // 获取日期选择框元素
+        const datepicker1 = document.getElementById('datepicker_1');
+        const datepicker2 = document.getElementById('datepicker_2');
+        var startDate_year;
+        var startDate_month;
+        var startDate_day;
+        var endDate_year;
+        var endDate_month;
+        var endDate_day;
+
+
+
+        // 当日期变化时触发的事件处理程序
+        datepicker_1.addEventListener('change', function () {
+            // 获取所选开始日期的值
+            startDate = datepicker1.value;
+            const [year, month, day] = startDate.split('-').map(Number);
+            startDate_year = year;
+            startDate_month = month;
+            startDate_day = day;
+            // console.log('选择的开始日期是：', startDate_year,startDate_month,startDate_day);
+        });
+
+        datepicker_2.addEventListener('change', function () {
+            // 获取所选结束日期的值
+            endDate = datepicker2.value;
+            const [year, month, day] = endDate.split('-').map(Number);
+            endDate_year = year;
+            endDate_month = month;
+            endDate_day = day;
+
+            //console.log('选择的结束日期是：', endDate);
+        });
+
+
+
+
+
+
+
+
+        var dynamicOptions = [
+            { value: "apple", text: "线路1" },
+            { value: "orange", text: "线路2" },
+        ];
+
+        var dynamicOptions2 = [
+
+        ];
+
+
+        window.onload = function () {
+            initializeDropdown("fruitSelect_1", dynamicOptions);
+            initializeDropdown("fruitSelect_2", dynamicOptions2);
+            //   initializeDropdown("fruitSelect_3", dynamicOptions);
+            //   initializeDropdown("fruitSelect_4", dynamicOptions2);
+            //   initializeDropdown("fruitSelect_5", dynamicOptions);
+
+        };
+
+        function initializeDropdown(selectId, options) {
+            var selectElement = document.getElementById(selectId);
+
+            options.forEach(function (option) {
+                var optionElement = document.createElement("option");
+                optionElement.value = option.value;
+                optionElement.text = option.text;
+                selectElement.add(optionElement);
+            });
+        }
+
+        // function displaySelectedFruit() {
+        //   var selectElement = document.getElementById("fruitSelect");
+        //   var selectedValue = selectElement.value;
+
+        //   var displayArea = document.getElementById("selectedFruit");
+        //   displayArea.innerHTML = "你选择的水果是：" + selectedValue;
+        // }
+
+
+
+        function Show_Tips(message, time) {
+
+
+            // 提示框
+            var modal = document.getElementById("myModal");
+            var closeBtn = document.getElementsByClassName("close")[0];
+            var modalMessage = document.getElementById("modalMessage");
+            // 设置模态框的提示信息
+            modalMessage.innerText = message;
+            // 显示模态框
+            modal.style.display = "block";
+
+            // 设置定时器，在3秒后关闭模态框
+            if (time)
+                setTimeout(function () {
+                    modal.style.display = "none";
+                }, time); // 3000毫秒 = 3秒
+
+            // 点击关闭按钮时隐藏模态框
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            };
+
+        }
+
+
+
+
+
+        function DrawRoute_new() {
+            var clicktime = 0;
+            // var markerList = [];
+            // var markerList_shou = [];
+            // var markerList_auto = [];
+            // var markerList_shouNoinMarkerList = [];
+            // var markerList_autoNoinMarkerList = [];
+
+            let isShiftPressed = false;
+
+            // 新增函数，用于清除标记和路线
+            function clearMarkersAndRoutes() {
+                for (var i = 0; i < markerList.length; i++) {
+                    map.removeOverlay(markerList[i]);
+                }
+                markerList = [];
+                markerList_autoNoinMarkerList = [];
+                markerList_shouNoinMarkerList = [];
+                map.removeOverlay(polyline);
+                polyline = null;
+            }
+
+            // 添加点击事件监听器
+            function addClickListener() {
+                map.addEventListener("rightclick", handleRightClick);
+            }
+
+            // 移除点击事件监听器
+            function removeClickListener() {
+                map.removeEventListener("rightclick", handleRightClick);
+
+            }
+
+            function handleRightClick(e) {
+                var point = new BMap.Point(e.point.lng, e.point.lat);
+                var marker = new BMap.Marker(point);
+                marker.enableDragging();
+                map.addOverlay(marker);
+                markerList.push(marker);
+
+                //const overlay = document.querySelector('.overlay');
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Control' || event.key === 'Ctrl') {
+                        if (!isShiftPressed) {
+                            isShiftPressed = true;
+                            // overlay.style.display = 'flex';
+                            Show_Tips("手动绘制已打开");
+                        }
+                    }
+                });
+
+                document.addEventListener('keyup', function (event) {
+                    if (event.key === 'Control' || event.key === 'Ctrl') {
+                        if (isShiftPressed) {
+                            isShiftPressed = false;
+                            Show_Tips("自动绘制已打开", 2000);
+                            // overlay.style.display = 'none';
+                        }
+                    }
+                });
+
+                if (markerList.length > 1) {
+                    if (isShiftPressed == true) {
+                        markerList_shouNoinMarkerList.push(markerList.length - 1)
+                    } else {
+                        markerList_autoNoinMarkerList.push(markerList.length - 1)
+                    }
+
+                    if (isShiftPressed == false) {
+                        for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                            var start = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                            var end = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                            getNavigationPoints(start, end);
+                            // console.log(markerList_autoNoinMarkerList[markerList_autoNoinMarkerList.length-1]);
+                        }
+                    } else {
+                        for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                            var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                            var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                            DrawRoute([startPoint_shou, endPoint_shou]);
+                        }
+                    }
+
+
+
+
+                }
+            }
+
+            // 删除上一个点
+            function deleteLastMarker() {
+                if (markerList.length > 0) {
+                    var lastMarker = markerList.pop();
+                    map.removeOverlay(lastMarker);
+                    if (markerList_autoNoinMarkerList.includes(markerList.length)) {
+                        markerList_autoNoinMarkerList.pop();
+                    } else {
+                        markerList_shouNoinMarkerList.pop();
+                    }
+
+                    for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                        var start = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                        var end = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                        getNavigationPoints(start, end);
+                    }
+
+                    for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                        var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                        var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                        DrawRoute([startPoint_shou, endPoint_shou]);
+                    }
+                } else {
+                    Show_Tips("已删除所有点", 500);
+                    map.removeOverlay(polyline);
+                    polyline = null;
+                }
+            }
+
+            // 监听键盘事件
+            document.addEventListener("keydown", function (e) {
+                if (e.code === "Delete") {
+                    map.clearOverlays();
+                    deleteLastMarker();
+                }
+            });
+
+            // 添加或移除点击事件监听器
+            function toggleClickListener(enable) {
+                if (enable) {
+                    addClickListener();
+                } else {
+                    removeClickListener();
+                }
+            }
+
+            return toggleClickListener;
+        }
+
+
+        //输入起始点，输入导航上的点
+        function getNavigationPoints(startPoint, endPoint) {
+
+            // 调用导航服务
+            var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+                //renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                    if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                        var plan = results.getPlan(0); // 获取导航方案
+                        var route = plan.getRoute(0); // 获取导航路线
+                        var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                        //输出导航路线上的道路点信息
+                        for (var i = 0; i < path.length; i++) {
+                            var point = path[i];
+
+                            // console.log("道路点：" + point.lng + "," + point.lat); 
+                            // AddMark(point.lng,point.lat);
+
+                        }
+
+                        // console.log(path.length);
+                        DrawRoute(path);
+                    }
+                }
+            });
+
+            // 开始导航
+            driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+        }
+
+        function AddMark(lng, lat) {
+
+            var ggPoint = new BMap.Point(lng, lat);
+
+
+            // 添加谷歌marker和label
+            var markergg = new BMap.Marker(ggPoint);
+            map.addOverlay(markergg); // 添加谷歌marker
+
+            var labelgg = new BMap.Label("1", { offset: new BMap.Size(20, -10) });
+
+            markergg.setLabel(labelgg); // 添加label
+            map.setCenter(markergg);
+
+        }
+
+
+        function AddMark_inputcontainer(lng, lat, flag_showinput) {
+
+            if (flag_showinput == 1) {
+                var ggPoint = new BMap.Point(transform(lng, lat).bdLon, transform(lng, lat).bdLat);
+                var labelgg = new BMap.Label("WGS", { offset: new BMap.Size(20, -10) });
+            }
+            else {
+                var ggPoint = new BMap.Point(lng, lat);
+                var labelgg = new BMap.Label("BD", { offset: new BMap.Size(20, -10) });
+            }
+
+            // 添加谷歌marker和label
+            var markergg = new BMap.Marker(ggPoint);
+            map.addOverlay(markergg); // 添加谷歌marker
+
+
+
+
+            markergg.setLabel(labelgg); // 添加label
+            map.setCenter(markergg);
+
+        }
+
+        function AddMark_inputcontainer1(lng, lat) {
+
+            var ggPoint = new BMap.Point(lng, lat);
+
+
+            // 添加谷歌marker和label
+            var markergg = new BMap.Marker(ggPoint);
+            map.addOverlay(markergg); // 添加谷歌marker
+
+            var labelgg = new BMap.Label("2", { offset: new BMap.Size(20, -10) });
+
+            markergg.setLabel(labelgg); // 添加label
+            map.setCenter(markergg);
+
+        }
+
+
+
+        //输入点数组，所有点连线
+        function DrawRoute(coordinates) {
+
+            // 创建连线，并设置样式
+            var polyline = new BMap.Polyline(coordinates, {
+                strokeColor: "green",
+                strokeWeight: 6,
+                strokeOpacity: 1
+            });
+
+            // 将连线添加到地图上
+            map.addOverlay(polyline);
+
+        }
+        //输入点数组，所有点连线
+        function DrawRoute_DiffrenteColor(coordinates, number) {
+
+            var strokeColor;
+            switch (number) {
+                case 0:
+                    strokeColor = "Red";
+                    break;
+                case 1:
+                    strokeColor = "Orange";
+                    break;
+                case 2:
+                    strokeColor = "Yellow";
+                    break;
+                case 3:
+                    strokeColor = "Green";
+                    break;
+                case 4:
+                    strokeColor = "Blue";
+                    break;
+                case 5:
+                    strokeColor = "Indigo";
+                    break;
+                case 6:
+                    strokeColor = "Purple";
+                    break;
+                case 7:
+                    strokeColor = "Pink";
+                    break;
+                case 8:
+                    strokeColor = "Brown";
+                    break;
+                case 9:
+                    strokeColor = "White";
+                    break;
+                case 10:
+                    strokeColor = "Black";
+                    break;
+                case 11:
+                    strokeColor = "Gray";
+                    break;
+                case 12:
+                    strokeColor = "Silver";
+                    break;
+                case 13:
+                    strokeColor = "Gold";
+                    break;
+                case 14:
+                    strokeColor = "Cyan";
+                    break;
+                case 15:
+                    strokeColor = "Beige";
+                    break;
+                case 16:
+                    strokeColor = "Tan";
+                    break;
+                case 17:
+                    strokeColor = "Navy Blue";
+                    break;
+                case 18:
+                    strokeColor = "Dark Green";
+                    break;
+                case 19:
+                    strokeColor = "Dark Red";
+                    break;
+                default:
+                    strokeColor = "Green"; // 默认颜色为绿色
+                    break;
+            }
+
+            // 创建连线，并设置样式
+            var polyline = new BMap.Polyline(coordinates, {
+                strokeColor: strokeColor,
+                strokeWeight: 6,
+                strokeOpacity: 1
+            });
+
+            // 将连线添加到地图上
+            map.addOverlay(polyline);
+
+        }
+
+
+    </script>
+</body>
+
+</html>
+
+
+<!-- 输出 无满足的 逻辑有问题 -->

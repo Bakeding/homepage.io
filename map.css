@@ -1,0 +1,265 @@
+
+/* 提示框 */
+.modal {
+display: none; /* 初始时隐藏模态框 */
+}
+.modal-content {
+
+background-color: rgba(254, 254, 254, 0.6); /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+margin: auto;
+padding: 10px;
+border: 5px solid #888;
+height: 50px;
+width: 18%;
+position: absolute;
+left: 50%;
+top: 20%;
+transform: translate(-50%, -50%);
+text-align: center;
+font-size: 24px;
+justify-content: center; 
+align-items: center;
+line-height: 50px;
+}
+
+.close {
+color: #aaaaaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+color: #000;
+text-decoration: none;
+cursor: pointer;
+}
+
+
+
+/* 日期选择 */
+.datepicker-container {
+position: absolute;
+top:4%;
+left: 20%;
+transform: translate(-50%, -50%);
+text-align: center;
+background-color: rgb(255, 255, 255, 0.1); /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+}
+
+
+/* 表格 */
+    #transparent-table {
+        position: absolute;
+        top: 80px; /* 设置表格距离地图顶部的距离 */
+        right: 1%; /* 设置表格距离地图左侧的距离 */
+        background-color: rgba(255, 255, 255, 0.5); /* 设置表格背景色为半透明 */
+        border-collapse: collapse;
+        z-index: 999; /* 设置表格在地图上的层级 */
+    }
+    #transparent-table th,
+    #transparent-table td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+    }
+
+
+/* <!-- 下拉框 --> */
+
+    select {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    font-size: 18px;
+    color:rgb(255, 255, 255);
+    width: 120px;
+    height: 30px;
+    border: 2px solid #109217;
+    position: fixed; /* 使用 fixed 将下拉选择框固定在视口中 */
+    top: 20px; /* 调整距离顶部的位置 */
+    left: 50%; /* 将选择框水平居中 */
+    transform: translateX(-50%); /* 通过 transform 居中 */
+    background-color: rgba(26, 188, 156, 0.8); /* 半透明白色背景 */
+    }
+    
+            /* 设置第一个下拉框的垂直位置 */
+        #fruitSelect_1 {
+    left: 30%;
+    }
+
+    /* 设置第二个下拉框的垂直位置 */
+    #fruitSelect_2 {
+    left: 40%;
+    }
+
+     /* 设置第三个下拉框的垂直位置 */
+      #fruitSelect_3 {
+    left: 50%;
+    }
+
+     /* 设置第4个下拉框的垂直位置 */
+     #fruitSelect_4 {
+    left: 60%;
+    }
+
+    /* 设置第5个下拉框的垂直位置 */
+    #fruitSelect_5 {
+    left: 70%;
+    }
+
+/* </style>        
+
+<!-- 输入框 -->
+<style> */
+.input-container {
+position: fixed;
+top: 20px; /* 调整为适合的位置 */
+left: 80%; /* 调整为适合的位置 */
+display: flex;
+align-items: center;
+width: 300px;
+}
+
+.input-field {
+flex: 1;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+}
+
+.input-label {
+position: absolute;
+top: 50%;
+left: 10px;
+transform: translateY(-50%);
+pointer-events: none;
+color: rgba(0,0,0,0.5);
+transition: all 0.3s ease;
+}
+
+.input-field:focus + .input-label,
+.input-field:not(:placeholder-shown) + .input-label {
+top: 0;
+font-size: 12px;
+color: #000;
+}
+
+.input-button {
+padding: 8px 12px;
+background-color: #007bff;
+color: #fff;
+border: none;
+border-radius: 5px;
+margin-left: 10px;
+cursor: pointer;
+}
+/* </style> */
+
+.container {
+    position: fixed;
+          top: 10%;
+          right: 2%;
+          width: 370px;
+          height: 85%;
+          overflow-y: scroll;
+          border: 3px solid rgb(158, 158, 158);
+        border-collapse: collapse;
+        box-shadow: 0px 2px 10px rgba(2, 0, 3,0.5);
+      }
+      table, th, td {
+          border: 1px solid rgb(19, 69, 161);
+          border-collapse: collapse;
+          padding: 5px;
+          text-align: center;
+      }
+
+      .mybutton6 {
+        position: fixed;
+        top: 450px;
+        left: 80px;
+        z-index: 9999;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        opacity: 0.7;
+    }
+    .mybutton6:active {
+        background-color: #3e8e41;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+    }
+
+    .mybutton7 {
+        position: fixed;
+        top: 500px;
+        left: 80px;
+        z-index: 9999;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        opacity: 0.7;
+    }
+    .mybutton7:active {
+        background-color: #3e8e41;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+    }
+
+
+/* 二选一 */
+#choose {
+    position: absolute;
+    top: 5%;
+    right: -1%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 1px 1px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 8px;
+    font-weight: bold;
+    
+  }
+  
+  h1,
+  p {
+    margin: 0;
+  }
+  
+  input[type='radio'] {
+    display: none;
+  }
+  
+  .label-container label {
+    cursor: pointer;
+    display: inline-block;
+    margin-bottom: 1px;
+    background-color: #eee;
+    padding: 10px 10px;
+    border-radius: 5px;
+  }
+  
+  .label-container input[type='radio']:checked+label {
+    background-color: #2196f3;
+    color: #fff;
+  }

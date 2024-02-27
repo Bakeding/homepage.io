@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="./axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+
+
+<script>
+
+
+                const batchSize = 1000;
+                let offset = 0;
+                var thisstr = [];
+                var ishavedate = 0;
+                var license='豫rx2585';
+
+                function fetchData() {
+                        axios.post("./myindex_ShowRoad.php", {
+                        License: license,
+                        offset: offset,
+                        limit: batchSize
+                    })
+                        .then(response => {
+                            const data = response.data;
+
+              
+
+                                      console.log(data);
+
+     
+                        })
+                        .catch(error => {
+                            console.error('发生错误：', error);
+                        });
+                }
+
+                // 第一次请求
+                fetchData();
+                
+             //1传入时间数组，先按照时间排序，之后间隔一段时间的数据分到同一组
+                function cleanAndSortTimeArray(arr) {
+                                        arr.sort((a, b) => {
+                                            return new Date(a.uptime) - new Date(b.uptime);
+                                        });
+
+                                        let result = [];
+                                        let group = [];
+                                        let prevTime = null;
+
+                                        for (let obj of arr) {
+                                            let currentTime = new Date(obj.uptime);
+                                            if (prevTime && (currentTime - prevTime) / 3600000 < 1) {//除以3600000是将ms转化为h  
+                                                group.push(obj);
+                                            } else {
+                                                if (group.length > 0) {
+                                                    result.push(group);
+                                                }
+                                                group = [obj];
+                                            }
+                                            prevTime = currentTime;
+                                        }
+
+                                        if (group.length > 0) {
+                                            result.push(group);
+                                        }
+
+                                        return result;
+                                    }
+          
+
+</script>
+
+</body>
+</html>

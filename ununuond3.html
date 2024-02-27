@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="./axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+
+
+<script>
+
+
+                const batchSize = 1000;
+                let offset = 0;
+                var thisstr = [];
+                var ishavedate = 0;
+                var license='豫rx2585';
+
+                function fetchData() {
+                    axios.post("./myindex_ShowRoad.php", {
+                        License: license,
+                        offset: offset,
+                        limit: batchSize
+                    })
+                        .then(response => {
+                            const data = response.data;
+
+              
+
+                                      console.log(data);
+
+     
+                        })
+                        .catch(error => {
+                            console.error('发生错误：', error);
+                        });
+                }
+
+                // 第一次请求
+                fetchData();
+          
+
+</script>
+
+</body>
+</html>

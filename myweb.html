@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+
+           
+
+        var ishavedate = 0;
+        var license_all ="";
+        var thisstr = [];
+        
+        //匹配按钮
+        async function mybutton7_clicked() {
+
+            
+    if (markerList_autoNoinMarkerList.length !== 0) {
+        const License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
+
+        for (const license of License_all) {
+            thisstr = [];
+            license_all=license;
+            console.log(license_all);
+            await fetchData();
+        }
+
+        // 所有数据已经处理完成
+    } else {
+        Show_Tips("请先绘制或加载路线", 800);
+    }
+}
+
+
+function fetchData() {
+    const batchSize = 100000; // 每批请求的数量
+    let offset = 0; // 数据偏移量
+
+    return new Promise((resolve, reject) => {
+        axios.post("./myindex.php", {
+                License: license_all,
+                offset: offset,
+                limit: batchSize
+            })
+            .then(function (response) {
+                
+                const data = response.data;
+                            // let resultHTML = '';
+
+                            if (data.length > 0) {
+                                var thispoint = data.map(function (item) {
+                                    var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
+                                    var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值   
+                                    columnall.uptime.push(item.uptime);
+                                    columnall.id.push(item.id);
+                                    columnall.lng.push(lng);
+                                    columnall.lat.push(lat);
+
+                                    return new BMap.Point(lng, lat);  // 返回 BMap.Point 对象
+                                });
+
+                                classifiedData_all_mysql = classifyData_all(columnall);
+                                // console.log(classifiedData_all_mysql);
+
+                                //插入start
+
+
+                                // 调用导航服务
+                                var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+
+                                    //renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                                    onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                                        if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                                            var plan = results.getPlan(0); // 获取导航方案
+                                            var route = plan.getRoute(0); // 获取导航路线
+                                            var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                                            //输出导航路线上的道路点信息
+                                            // console.log( path.length);
+                                            for (var i = 1; i < path.length; i++) {//两点之间所有导航点,i=1 是因为有起始点
+                                                var point_previous = path[i - 1];
+                                                var point = path[i];
+
+                                                var point_divide = []; var Now_Point_Class = [];
+                                                var CenterPoint_11 = new BMap.Point(point_previous.lng, point_previous.lat);
+                                                var CenterPoint_12 = new BMap.Point(point.lng, point.lat);
+                                                var dlng = point.lng - point_previous.lng;
+                                                var dlat = point.lat - point_previous.lat;
+                                                var Difference = Math.sqrt(dlng * dlng + dlat * dlat);
+                                                var Point_Time = Math.ceil(Difference / 0.0001);//分成多少段
+                                                //  var  Point_Distance=(Difference/Point_Time);//每一段的长度
+                                                for (var j = 1; j < Point_Time + 1; j++) {//每个导航点之间分的点，间隔0.0001
+                                                    var Now_Point = new BMap.Point(point_previous.lng + j * dlng / Point_Time, point_previous.lat + j * dlat / Point_Time);//当前点
+                                                    point_divide.push(Now_Point);//每个点放入到数组
+                                                    //console.log(Now_Point);
+                                                    var Now_Point_Class_center = new BMap.Point(Math.floor(point_divide[j - 1].lng * 10000) / 10000, Math.floor(point_divide[j - 1].lat * 10000) / 10000);//中心点所在组类
+                                                    // console.log(Now_Point_Class_center);
+                                                    var Now_Point_Class_1 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                    var Now_Point_Class_2 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                    var Now_Point_Class_3 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                                    var Now_Point_Class_4 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                    var Now_Point_Class_5 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                    var Now_Point_Class_6 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                                    var Now_Point_Class_7 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                    var Now_Point_Class_8 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                    var Now_Point_Class_9 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                                    Now_Point_Class.push(Now_Point_Class_1, Now_Point_Class_2, Now_Point_Class_3, Now_Point_Class_4, Now_Point_Class_5, Now_Point_Class_6, Now_Point_Class_7, Now_Point_Class_8, Now_Point_Class_9);
+
+                                                }
+                                                let Now_Point_Class_DeleteRepetPoint = removeDuplicatePoints(Now_Point_Class);//剔除重复方格后的新数组（两个导航点之间的所有方格中心点）              
+
+                                                for (var k = 0; k < Now_Point_Class_DeleteRepetPoint.length; k++) {//将数组遍历一遍找到是否在数据库有这个数组，然后返回这个数据库点的信息。
+
+                                                    var item = new BMap.Point(Now_Point_Class_DeleteRepetPoint[k].lng, Now_Point_Class_DeleteRepetPoint[k].lat)
+
+                                                    var key1 = new BMap.Point(Math.floor(item.lng * 10) / 10, Math.floor(item.lat * 10) / 10);
+                                                    var key2 = new BMap.Point(Math.floor(item.lng * 100) / 100, Math.floor(item.lat * 100) / 100);
+                                                    var key3 = new BMap.Point(Math.floor(item.lng * 1000) / 1000, Math.floor(item.lat * 1000) / 1000);
+                                                    var key4 = new BMap.Point(Math.floor(item.lng * 10000) / 10000, Math.floor(item.lat * 10000) / 10000);
+
+
+                                                    //     classifiedData_all_mysql分类在此
+                                                    if (
+
+                                                        classifiedData_all_mysql[key1.lng] &&         // 判断第一维索引是否存在
+                                                        classifiedData_all_mysql[key1.lng][key2.lng] && // 判断第二维索引是否存在
+                                                        classifiedData_all_mysql[key1.lng][key2.lng][key3.lng] && // 判断第三维索引是否存在
+                                                        classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng] // 判断第四维索引是否存在
+
+                                                    ) {
+
+                                                        for (let t = 0; t < classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng].length; t++) {
+                                                            // console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][0]);
+                                                            let current_lat = Math.floor((classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lat) * 10000) / 10000;
+
+                                                            if (current_lat == Now_Point_Class_DeleteRepetPoint[k].lat) {
+                                                                ishavedate = 1;
+
+                                                                if ((startDate_year === undefined && endDate_year === undefined) || (startDate_year == 0 && endDate_year == 0)) {
+                                                                    thisstr.push(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                                     console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                                    // AddMark_inputcontainer1(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lng,classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].lat);
+                                                                } else {
+
+                                                                    //筛选框：
+                                                                    // 使用 split 方法拆分日期和时间部分
+                                                                    const [datePart, timePart] = (classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t].uploadtime).split(' ');
+                                                                    // 拆分日期部分为年、月、日
+                                                                    const [year, month, day] = datePart.split('/').map(Number);
+                                                                    // console.log(year, month, day);
+                                                                    if (isWithinRange(year, month, day, startDate_year, startDate_month, startDate_day, endDate_year, endDate_month, endDate_day)) {
+                                                                        console.log(classifiedData_all_mysql[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                                    }
+
+
+                                                                }
+
+
+
+                                                            }
+
+
+
+                                                        }
+
+                                                    }
+
+
+
+
+
+                                                }
+                                            }
+
+
+
+                                        }
+
+
+                                        //console.log(removeDuplicate(thisstr));//确保最后输出的数组内元素唯一
+                                        // if( ishavedate==0) Show_Tips("无满足数据",600);
+
+                                    }
+
+
+                                });
+
+                                //输出手动导航点的经纬度
+                                for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                                    var startPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                                    var endPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                                    // 开始导航
+
+
+                                    driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+
+
+                                }
+
+                                for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                                    var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                                    var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                                    // console.log(startPoint_shou, endPoint_shou);
+                                }
+
+
+                                //剔除数组重复元素，返会新数组——————————————————————————start
+                                function comparePoints(point1, point2) {
+                                    return point1.lng === point2.lng && point1.lat === point2.lat;
+                                }
+                                //剔除重复网格
+                                function removeDuplicatePoints(arr) {
+                                    let uniqueArr = [];
+
+                                    for (let i = 0; i < arr.length; i++) {
+                                        let isDuplicate = false;
+
+                                        for (let j = i + 1; j < arr.length; j++) {
+                                            if (comparePoints(arr[i], arr[j])) {
+                                                isDuplicate = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!isDuplicate) {
+                                            uniqueArr.push(arr[i]);
+                                        }
+                                    }
+
+                                    return uniqueArr;
+                                }
+
+
+
+                                //剔除数组重复元素，返会新数组_________________________end
+
+
+
+
+                                //插入end
+
+
+
+                                offset += batchSize;
+
+                                // 继续下一批请求
+                               fetchData();
+                                columnall = {
+                                    id: [],
+                                    lng: [],
+                                    lat: [],
+                                    uptime: [],
+
+                                };
+
+                            } else {
+                                // console.log('没有找到匹配的记录');
+                                Show_Tips("数据处理完毕", 1000);
+
+                                console.log(removeDuplicate(thisstr));//确保最后输出的数组内元素唯一
+                               
+
+                                function removeDuplicate(data) {
+                                    let uniqueIds = {}; // 用对象来存储唯一的id
+                                    let newData = [];
+                                    for (let i = 0; i < data.length; i++) {
+
+                                        let id = data[i].id;
+                                        if (!uniqueIds[id]) { // 如果id不在对象中，则说明是第一次出现，可以加入新数组
+                                            uniqueIds[id] = true;
+                                            newData.push(data[i]);
+                                        }
+                                    }
+                                    return newData;
+                                }
+                             
+                              
+                            }
+
+                            resolve();
+                
+            })
+            .catch(function (error) {
+                console.error('发生错误：', error);
+                reject(error);
+            });
+    });
+}
+
+
+
+    </script>
+</body>
+</html>

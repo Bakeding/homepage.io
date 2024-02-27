@@ -2,14 +2,12 @@
 <html>
 <meta charset="UTF-8">
 <title>东易物联道路巡车</title>
-<script src="./jquery.js"></script>
 <!-- <head>
     </head> -->
 <link rel="stylesheet" href="map.css">
 
 
 <head>
-
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>运输轨迹图</title>
     <script type="text/javascript"
@@ -24,28 +22,28 @@
         <p>Ctrl按下</p>
       </div>  -->
 
-    <div style="width:100%; height:98vh; border:1px solid gray" id="map">
+    <div style="width:100%; height:100vh; border:0px solid gray" id="container">
     </div>
     <!-- <div>
     <button id="saveButton">保存数组到本地</button>
   </div> -->
 
-    <div class="tableBodycontainer">
-
+    <div class="container">
         <table>
             <thead>
                 <tr>
                     <th>\</th>
                     <th>车牌</th>
-                    <th>匹配情况</th>
+                    <th>时间</th>
+                    <th>行驶里程</th>
+                    <th>匹配度</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 
-    <!-- 文字标签 -->
-    <div id="bordered" class="bordered">线路总长度：</div>
+
 
     <!-- 模态框 -->
     <div id="myModal" class="modal">
@@ -65,9 +63,6 @@
             <input type="date" id="datepicker_2">
         </form>
     </div>
-
-
-
     <!-- 下拉框 -->
 
     <!-- 第一个下拉框 -->
@@ -98,56 +93,6 @@
         <option value="">车牌</option>
         <!-- 线路、细分行业、品牌、车型、 -->
     </select>
-
-
-    <!-- 部分匹配上下限选择 -->
-    <div class="BuFenpicker-container">
-        <form>
-            <label for="BuFenpicker_1">部分匹配下限:(匹配度)</label>
-            <input type="text" id="BuFenpicker_1" class="input-BuFenpicker" value="10">
-            <br>
-            <label for="BuFenpicker_2">部分匹配上限:(匹配度)</label>
-            <input type="text" id="BuFenpicker_2" class="input-BuFenpicker" value="98">
-        </form>
-    </div>
-
-    <!-- 部分匹配复选框 -->
-
-    <div class="switch-container">
-        <form>
-            <div class="switch">
-                <label for="checkbox1">
-                    <input type="checkbox" id="checkbox1" name="checkbox1" value="option1" checked>
-                    <div class="slider"></div>
-                </label>
-                <span>全匹配</span>
-            </div>
-
-            <div class="switch">
-                <label for="checkbox2">
-                    <input type="checkbox" id="checkbox2" name="checkbox2" value="option2" checked>
-                    <div class="slider"></div>
-                </label>
-                <span>部分匹配</span>
-            </div>
-        </form>
-    </div>
-
-    <div class="switch-container1">
-        <form>
-            <div class="switch">
-                <label for="checkbox3">
-                    <input type="checkbox" id="checkbox3" name="checkbox3" value="option3" dischecked>
-                    <div class="slider"></div>
-                </label>
-                <span>显示线路</span>
-            </div>
-
-
-        </form>
-    </div>
-
-
     <!-- 输入框 -->
 
     <div class="input-container">
@@ -155,8 +100,6 @@
         <label class="input-label" for="input">请输入经纬度，以英文逗号间隔</label>
         <button class="input-button" onclick="showInput()">查询</button>
     </div>
-
-
 
     <!-- 复选框 二选一-->
     <div id="choose">
@@ -170,30 +113,30 @@
         </div>
     </div>
 
-    <button class="mybutton0" onclick="mybutton0_clicked()">保存</button>
-    <button class="mybutton1" onclick="mybutton1_clicked()">打开</button>
-    <button id="button2" class="mybutton2" onclick="mybutton2_clicked()">绘制</button>
 
-    <button class="mybutton6" onclick="mybutton6_clicked()">加载路线</button>
+
+    <button class="mybutton6" onclick="mybutton6_clicked()">确定</button>
     <button class="mybutton7" onclick="mybutton7_clicked()">匹配</button>
-    <button class="mybutton8" onclick="mybutton8_clicked()">
-        <img src="download-icon.jpg" alt="下载图标" style="width: 20px; height: 20px;">
-    </button>
     <script type="text/javascript">
 
 
 
-        var Flag_ShowRoad= 0;
-        var Distance_all = 0;    //绘制导航线路总距离（m）     
+
+
+
+
+
+
+
+
+
+
         var Data_all = [];//没有处理的经纬度坐标
         var classifiedData_all_mysql;
         var classifiedData_all;//数据处理后的lng(四层树状结构)——————总分类
         //  var classifiedData_lng_all;//按照经度四层分类
         //  var classifiedData_lat_all;//按照纬度四层分类
         var classifiedData_uploadtime_all;//按照日期分类————年——月——日
-        var classifiedData_After = [];//匹配完成之后的数组
-        var polyline_ResultsDisplay;
-
         var columnall = {
             id: [],
             lng: [],
@@ -210,6 +153,45 @@
 
 
 
+      
+
+        var tableBody = document.getElementById("tableBody");
+        function AddtableBody(e,a,b,c,d)
+        
+        {
+       // for (var i = 0; i < 10; i++) {
+            var row = document.createElement("tr");
+     
+            let id = document.createElement("td");
+            id.textContent = e;
+            row.appendChild(id);
+
+            var idCell = document.createElement("td");
+            idCell.textContent = a;
+            row.appendChild(idCell);
+
+            var lngCell = document.createElement("td");
+            lngCell.textContent = b;
+            row.appendChild(lngCell);
+
+            var latCell = document.createElement("td");
+            latCell.textContent = c;
+            row.appendChild(latCell);
+
+            var thistime = document.createElement("td");
+            thistime.textContent = d;
+            row.appendChild(thistime);
+
+            tableBody.appendChild(row);
+      //  }s
+
+        }
+
+ 
+
+
+
+
 
         createMap();
         var markerList = [];
@@ -220,76 +202,165 @@
 
 
 
-        //计算两点距离（m）
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371000; // 地球半径
+        // 创建按钮元素
+        var button = document.createElement("button");
+        button.innerHTML = "保存";
+        button.id = "myButton";
+        // 设置按钮样式
+        button.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button.style.border = "2px solid green";
+        button.style.borderRadius = "5px";
+        button.style.color = "white";
 
-            // 将角度转换为弧度
-            const toRadians = (degrees) => {
-                return degrees * (Math.PI / 180);
-            };
-
-            // 根据 Haversine 公式计算距离
-            const deltaLat = toRadians(lat2 - lat1);
-            const deltaLon = toRadians(lon2 - lon1);
-            const a =
-                Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-                Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = earthRadius * c;
-
-            return distance;
-        }
-
-
-        function AddtableBody(a, b, c) {
-  //表格
-  var table = document.getElementById("tableBody");
-  var row = document.createElement("tr");
-
-  var rowspanCell = document.createElement("td");
-  rowspanCell.setAttribute("rowspan", c.length + 1);
-  rowspanCell.innerHTML = a;
-
-  var rowspanCell1 = document.createElement("td");
-  rowspanCell1.setAttribute("rowspan", c.length + 1);
-  rowspanCell1.innerHTML = b;
-
-  var firstRow = document.createElement("tr");
-  firstRow.appendChild(rowspanCell);
-  firstRow.appendChild(rowspanCell1);
-  table.appendChild(firstRow);
-
-  for (var i = 0; i < c.length; i++) {
-    var row = document.createElement("tr");
-
-    var cell = document.createElement("td");
-    cell.innerHTML = c[i];
-    row.appendChild(cell);
-    
-    // 为单元格添加点击事件监听器
-    (function(cellContent) {
-      cell.addEventListener('click', function() {
-        if(Flag_ShowRoad)
-        {
-            alert(cellContent);
+        // button.style.padding = "10px 20px";
+        button.style.textAlign = "center";
+        button.style.textDecoration = "none";
+        button.style.display = "inline-block";
+        button.style.fontSize = "12px";
+        // button.style.margin = "4px 2px";
+        button.style.cursor = "pointer";
+        button.style.position = "absolute";
+        button.style.top = "100px";
+        button.style.left = "100px";
+        button.style.zIndex = "9999";
+        button.style.width = "40px"; // 设置按钮宽度为120像素
+        button.style.height = "40px"; // 设置按钮高度为40像素  
 
 
+        // 创建第2个按钮元素
+        var button1 = document.createElement("button");
+        button1.innerHTML = "打开";
+        button1.id = "myButton1";
+        // 设置按钮样式
+        button1.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button1.style.border = "2px solid green";
+        button1.style.borderRadius = "5px";
+        button1.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button1.style.textAlign = "center";
+        button1.style.textDecoration = "none";
+        button1.style.display = "inline-block";
+        button1.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button1.style.cursor = "pointer";
+        button1.style.position = "absolute";
+        button1.style.top = "140px";
+        button1.style.left = "100px";
+        button1.style.zIndex = "9999";
+        button1.style.width = "40px"; // 设置按钮宽度为120像素
+        button1.style.height = "40px"; // 设置按钮高度为40像素
+        // button1.style.backgroundImage = "url('D:/Desktop/image/Draw.png')"; // 替换为你的图片链接
+
+        // 创建第一个按钮元素
+        var button2 = document.createElement("button");
+        button2.innerHTML = "绘制";
+        button2.id = "myButton2";
+        // 设置按钮样式
+        button2.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button2.style.border = "2px solid green";
+        button2.style.borderRadius = "5px";
+        button2.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button2.style.textAlign = "center";
+        button2.style.textDecoration = "none";
+        button2.style.display = "inline-block";
+        button2.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button2.style.cursor = "pointer";
+        button2.style.position = "absolute";
+        button2.style.top = "180px";
+        button2.style.left = "100px";
+        button2.style.zIndex = "9999";
+        button2.style.width = "40px"; // 设置按钮宽度为120像素
+        button2.style.height = "40px"; // 设置按钮高度为40像素
+        // button1.style.backgroundImage = "url('D:/Desktop/image/Draw.png')"; // 替换为你的图片链接
 
 
-        }
-       
-      });
-    })(c[i]); // 使用立即调用的闭包函数来保存当前单元格的内容
+        // 创建第一个按钮元素
+        var button3 = document.createElement("button");
+        button3.innerHTML = "加载数据";
+        button3.id = "myButton3";
+        // 设置按钮样式
+        button3.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button3.style.border = "2px solid green";
+        button3.style.borderRadius = "5px";
+        button3.style.color = "white";
 
-    table.appendChild(row);
-  }
-}
+        // button1.style.padding = "10px 20px";
+        button3.style.textAlign = "center";
+        button3.style.textDecoration = "none";
+        button3.style.display = "inline-block";
+        button3.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button3.style.cursor = "pointer";
+        button3.style.position = "absolute";
+        button3.style.top = "250px";
+        button3.style.left = "100px";
+        button3.style.zIndex = "9999";
+        button3.style.width = "40px"; // 设置按钮宽度为120像素
+        button3.style.height = "40px"; // 设置按钮高度为40像素
 
 
-        function mybutton0_clicked() {
+        // 创建第一个按钮元素
+        var button4 = document.createElement("button");
+        button4.innerHTML = "匹配";
+        button4.id = "myButton4";
+        // 设置按钮样式
+        button4.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button4.style.border = "2px solid green";
+        button4.style.borderRadius = "5px";
+        button4.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button4.style.textAlign = "center";
+        button4.style.textDecoration = "none";
+        button4.style.display = "inline-block";
+        button4.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button4.style.cursor = "pointer";
+        button4.style.position = "absolute";
+        button4.style.top = "320px";
+        button4.style.left = "100px";
+        button4.style.zIndex = "9999";
+        button4.style.width = "40px"; // 设置按钮宽度为120像素
+        button4.style.height = "40px"; // 设置按钮高度为40像素
+
+
+
+
+        // 创建第一个按钮元素
+        var button5 = document.createElement("button");
+        button5.innerHTML = "显示道路";
+        button5.id = "myButton5";
+        // 设置按钮样式
+        button5.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+        button5.style.border = "2px solid green";
+        button5.style.borderRadius = "5px";
+        button5.style.color = "white";
+
+        // button1.style.padding = "10px 20px";
+        button5.style.textAlign = "center";
+        button5.style.textDecoration = "none";
+        button5.style.display = "inline-block";
+        button5.style.fontSize = "12px";
+        // button1.style.margin = "4px 2px";
+        button5.style.cursor = "pointer";
+        button5.style.position = "absolute";
+        button5.style.top = "390px";
+        button5.style.left = "100px";
+        button5.style.zIndex = "9999";
+        button5.style.width = "40px"; // 设置按钮宽度为120像素
+        button5.style.height = "40px"; // 设置按钮高度为40像素
+        //-----------------------button保存
+        // 添加按钮按下效果的样式
+        button.addEventListener("mousedown", function () {
+            button.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button.addEventListener("mouseup", function () {
+            button.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
 
 
             // var markerList =DrawRoute_new();
@@ -332,10 +403,15 @@
             }
 
 
-        }
+        });
         //-----------------------button1打开
 
-        function mybutton1_clicked() {
+        // 添加按钮按下效果的样式
+        button1.addEventListener("mousedown", function () {
+            button1.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button1.addEventListener("mouseup", function () {
+            button1.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
 
 
             const fileInput = document.createElement('input');
@@ -436,7 +512,7 @@
             fileInput.click();
 
 
-        }
+        });
         // 添加按钮状态变量
 
         //-----------------------button2绘制          
@@ -444,42 +520,414 @@
         var isButtonOn2 = false;
         var toggleClickListener = DrawRoute_new();
         // 添加按钮点击事件
-        function mybutton2_clicked() {
-            var button = document.getElementById("button2");
-            button.classList.toggle("active");
+        button2.addEventListener("click", function () {
             isButtonOn2 = !isButtonOn2;
             updateButtonStyle2();
-        }
+        });
 
         // 更新按钮样式函数
         function updateButtonStyle2() {
 
             if (isButtonOn2) {
-
+                button2.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
                 toggleClickListener(true); // 启用绘制功能
             } else {
-
+                button2.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
                 toggleClickListener(false); // 禁用绘制功能
             }
         }
         //-----------------------button3数据库
 
+        // 添加按钮按下效果的样式
+        button3.addEventListener("mousedown", function () {
+            button3.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button3.addEventListener("mouseup", function () {
+            button3.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = 'fileInput';
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                Show_Tips("数据库处理中，请稍后");
+                reader.onload = function (e) {
+                    const fileContent = e.target.result;
+                    //  console.log(fileContent);
+                    //  console.log(fileContent.length);
 
 
 
 
 
+                    // 假设你已经将文件内容存储在变量 fileContent 中
+
+                    const lines = fileContent.split('\n'); // 将文件内容按换行符分割成数组
+
+                    const column1 = [];
+                    const column2 = [];
+                    const column3 = [];
+                    const column4 = [];
+                    //const column5 = [];
+
+                    for (let i = 2; i < lines.length - 2; i++) {
+                        const columns = lines[i].split('\t'); // 将每行数据按制表符分割成数组
+
+
+                        column1.push(columns[0]);//id
+                        column2.push(columns[1]);//lng
+                        column3.push(columns[2]);//lat
+                        column4.push(columns[3]);//uploadtime
+                        //column5.push(columns[4]);//address
+                    }
+                    columnall.id = column1;
+                    // columnall.lng=column2;
+                    // columnall.lat=column3;
+                    columnall.uploadtime = column4;
+                    // columnall.address=column5;
+
+
+
+                    for (let i = 0; i < column2.length; i++) {
+
+                        columnall.lng.push(transform(column2[i], column3[i]).bdLon);//经度
+                        columnall.lat.push(transform(column2[i], column3[i]).bdLat);//纬度
+
+                    }
+
+
+                    Data_all = columnall.lng.map((item, index) => new BMap.Point(item, columnall.lat[index]));
+                    classifiedData_all = classifyData_all(columnall);
+                    //classifiedData_lng_all= classifyData(columnall.lng);
+                    //classifiedData_lat_all=classifyData(columnall.lat);
+                    //classifiedData_uploadtime_all=classifyDateTime(columnall.uploadtime);
+
+                    //console.log(classifiedData_all);
+                    //    console.log(classifiedData_all[97.4][97.49][97.494][97.4944].length);
+                    Show_Tips("数据处理完毕", 1000);
+
+                };
+
+                reader.readAsText(file);
+            });
+
+            fileInput.click();
+
+        });
+
+
+
+        //-----------------------button4测试
+
+        // 添加按钮按下效果的样式
+        button4.addEventListener("mousedown", function () {
+            button4.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button4.addEventListener("mouseup", function () {
+            button4.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+            var thisstr = [];
+            var ishavedate = 0;
+
+            // 调用导航服务
+            var driving = new BMap.DrivingRoute(map, { // 创建一个驾车导航实例
+
+                //renderOptions: { map: map }, // 设置渲染选项，将导航结果显示在地图上
+                onSearchComplete: function (results) { // 定义导航完成时的回调函数
+                    if (driving.getStatus() === BMAP_STATUS_SUCCESS) { // 判断导航状态是否成功
+                        var plan = results.getPlan(0); // 获取导航方案
+                        var route = plan.getRoute(0); // 获取导航路线
+                        var path = route.getPath(); // 获取导航路线上的所有道路点
+
+                        //输出导航路线上的道路点信息
+                        // console.log( path.length);
+                        for (var i = 1; i < path.length; i++) {//两点之间所有导航点,i=1 是因为有起始点
+                            var point_previous = path[i - 1];
+                            var point = path[i];
+                            //  console.log(path.length+"道路点：" +  path[i].lng + "," +  path[i].lat); 
+                            //  AddMark(path[i].lng,path[i].lat);
+                            var point_divide = []; var Now_Point_Class = [];
+                            var CenterPoint_11 = new BMap.Point(point_previous.lng, point_previous.lat);
+                            var CenterPoint_12 = new BMap.Point(point.lng, point.lat);
+                            var dlng = point.lng - point_previous.lng;
+                            var dlat = point.lat - point_previous.lat;
+                            var Difference = Math.sqrt(dlng * dlng + dlat * dlat);
+                            var Point_Time = Math.ceil(Difference / 0.0001);//分成多少段
+                            //  var  Point_Distance=(Difference/Point_Time);//每一段的长度
+                            for (var j = 1; j < Point_Time + 1; j++) {//每个导航点之间分的点，间隔0.0001
+                                var Now_Point = new BMap.Point(point_previous.lng + j * dlng / Point_Time, point_previous.lat + j * dlat / Point_Time);//当前点
+                                point_divide.push(Now_Point);//每个点放入到数组
+                                //console.log(Now_Point);
+                                var Now_Point_Class_center = new BMap.Point(Math.floor(point_divide[j - 1].lng * 10000) / 10000, Math.floor(point_divide[j - 1].lat * 10000) / 10000);//中心点所在组类
+                                // console.log(Now_Point_Class_center);
+                                var Now_Point_Class_1 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_2 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_3 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 + 0.0001).toFixed(4));
+                                var Now_Point_Class_4 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_5 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_6 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000).toFixed(4));
+                                var Now_Point_Class_7 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 - 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                var Now_Point_Class_8 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                var Now_Point_Class_9 = new BMap.Point((Math.floor(point_divide[j - 1].lng * 10000) / 10000 + 0.0001).toFixed(4), (Math.floor(point_divide[j - 1].lat * 10000) / 10000 - 0.0001).toFixed(4));
+                                Now_Point_Class.push(Now_Point_Class_1, Now_Point_Class_2, Now_Point_Class_3, Now_Point_Class_4, Now_Point_Class_5, Now_Point_Class_6, Now_Point_Class_7, Now_Point_Class_8, Now_Point_Class_9);
+
+                            }
+                            let Now_Point_Class_DeleteRepetPoint = removeDuplicatePoints(Now_Point_Class);//剔除重复方格后的新数组（两个导航点之间的所有方格中心点）              
+                            // console.log(Now_Point_Class_DeleteRepetPoint);
+                            // for(var ni=0;ni<Now_Point_Class_DeleteRepetPoint.length;ni++)
+                            // {
+                            //     AddMark(Now_Point_Class_DeleteRepetPoint[ni].lng,Now_Point_Class_DeleteRepetPoint[ni].lat);
+                            // }
+
+                            for (var k = 0; k < Now_Point_Class_DeleteRepetPoint.length; k++) {//将数组遍历一遍找到是否在数据库有这个数组，然后返回这个数据库点的信息。
+
+                                var item = new BMap.Point(Now_Point_Class_DeleteRepetPoint[k].lng, Now_Point_Class_DeleteRepetPoint[k].lat)
+                                //  console.log(item);
+                                var key1 = new BMap.Point(Math.floor(item.lng * 10) / 10, Math.floor(item.lat * 10) / 10);
+                                var key2 = new BMap.Point(Math.floor(item.lng * 100) / 100, Math.floor(item.lat * 100) / 100);
+                                var key3 = new BMap.Point(Math.floor(item.lng * 1000) / 1000, Math.floor(item.lat * 1000) / 1000);
+                                var key4 = new BMap.Point(Math.floor(item.lng * 10000) / 10000, Math.floor(item.lat * 10000) / 10000);
+                                // console.log(key1.lat,key2.lat,key3.lat,key4.lat); //不能索引界外数组。
+                                //  console.log(Array.isArray(classifiedData_lng_all)); //不能索引界外数组。
+
+                                if (
+
+                                    classifiedData_all[key1.lng] &&         // 判断第一维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng] && // 判断第二维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng][key3.lng] && // 判断第三维索引是否存在
+                                    classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng] // 判断第四维索引是否存在
+
+                                ) {
+
+                                    for (let t = 0; t < classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng].length; t++) {
+
+                                        let current_lat = Math.floor((classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lat) * 10000) / 10000;
+
+
+                                        if (current_lat == Now_Point_Class_DeleteRepetPoint[k].lat) {
+                                            ishavedate = 1;
+                                            if ((startDate_year === undefined && endDate_year === undefined) || (startDate_year == 0 && endDate_year == 0)) {
+                                                thisstr.push(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+
+                                                // console.log(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                AddMark_inputcontainer1(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lng, classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].lat);
+                                            } else {
+
+                                                //筛选框：
+                                                // 使用 split 方法拆分日期和时间部分
+                                                const [datePart, timePart] = (classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t].uploadtime).split(' ');
+                                                // 拆分日期部分为年、月、日
+                                                const [year, month, day] = datePart.split('/').map(Number);
+                                                // console.log(year, month, day);
+                                                if (isWithinRange(year, month, day, startDate_year, startDate_month, startDate_day, endDate_year, endDate_month, endDate_day)) {
+                                                    console.log(classifiedData_all[key1.lng][key2.lng][key3.lng][key4.lng][t]);
+                                                }
+
+
+                                            }
+
+
+
+                                        }
+
+
+
+                                    }
+
+                                }
+
+
+
+
+
+                            }
+                        }
+
+
+
+                    }
+
+
+                    console.log(removeDuplicate(thisstr));
+                    if (ishavedate == 0) Show_Tips("无满足数据", 600);
+
+                }
+
+
+            });
+            //输出手动导航点的经纬度
+            for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
+                var startPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
+                var endPoint = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
+                // 开始导航
+                driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
+
+            }
+
+            for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
+                var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
+                var endPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i]].point.lng, markerList[markerList_shouNoinMarkerList[i]].point.lat);
+                // console.log(startPoint_shou, endPoint_shou);
+            }
+
+
+            //剔除数组重复元素，返会新数组——————————————————————————start
+            function comparePoints(point1, point2) {
+                return point1.lng === point2.lng && point1.lat === point2.lat;
+            }
+
+            function removeDuplicatePoints(arr) {
+                let uniqueArr = [];
+
+                for (let i = 0; i < arr.length; i++) {
+                    let isDuplicate = false;
+
+                    for (let j = i + 1; j < arr.length; j++) {
+                        if (comparePoints(arr[i], arr[j])) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDuplicate) {
+                        uniqueArr.push(arr[i]);
+                    }
+                }
+
+                return uniqueArr;
+            }
+
+
+            function removeDuplicate(data) {
+                let uniqueIds = {}; // 用对象来存储唯一的id
+                let newData = [];
+                for (let i = 0; i < data.length; i++) {
+
+                    let id = data[i].id;
+                    if (!uniqueIds[id]) { // 如果id不在对象中，则说明是第一次出现，可以加入新数组
+                        uniqueIds[id] = true;
+                        newData.push(data[i]);
+                    }
+                }
+                return newData;
+            }
+
+
+            //剔除数组重复元素，返会新数组_________________________end
+
+
+
+
+
+
+
+
+        });
+
+
+
+        //----------------button5
+
+
+
+        button5.addEventListener("mousedown", function () {
+            button5.style.backgroundColor = "rgba(26, 188, 156, 0.3)";
+        });
+        button5.addEventListener("mouseup", function () {
+            button5.style.backgroundColor = "rgba(26, 188, 156, 0.8)";
+
+
+
+
+            const Arr = Data_all.slice(100000, 500000);
+            const newArr = Arr.filter((_, index) => index % 100 === 0);
+            map.setViewport(newArr);//视角内包括所有线路
+            DrawRoute(newArr);
+
+        });
+
+
+
+        //                 $(function() {
+        //     var page = 1; // 起始页码
+        //     var pageSize = 10000; // 每页记录数
+
+        //     function fetchData() {
+        //         $.ajax({
+        //             url: "http://localhost:8077/myindex.php",
+        //             type: 'get',
+        //             dataType: 'json',
+        //             data: {
+        //                 page: page
+        //             },
+        //             success: function(data) {
+        //                 var html = '';
+        //                 for (var i = 0; i < data.length; i++) {
+        //                     html += '<tr>'
+        //                             + '<td>' + data[i].id + '</td>'
+        //                             + '<td>' + data[i].lng + '</td>'
+        //                             + '<td>' + data[i].lat + '</td>'
+        //                             + '</tr>';
+        //                 }
+        //               //  $('#data').append(html);
+        //               data1_all.push(data);
+        //                 if (data.length === pageSize) {
+        //                     // 继续请求下一页数据
+        //                     page++;
+        //                     fetchData();
+        //                 }
+        //             },
+        //             error: function(xhr, status, error) {
+        //                 console.log(error);
+        //             }
+        //         });
+        //     }
+
+        //     fetchData();
+        // });
+        // console.log(data1_all);
+
+
+        //             document.addEventListener("DOMContentLoaded", function() {
+        //   // 添加滚轮事件监听器
+        //   window.addEventListener("wheel", handleWheelEvent);
+
+        //   function handleWheelEvent(event) {
+        //     event.preventDefault();
+
+        //     const deltaY = event.deltaY;
+
+
+        //     if (deltaY > 0) {
+        //       // 向下滚动
+        //       // 执行相应操作
+        //       console.log("向下滚动");
+        //       console.log( map.getZoom());
+        //     } else if (deltaY < 0) {
+        //       // 向上滚动
+        //       // 执行相应操作
+        //       console.log("向上滚动");
+        //       console.log( map.getZoom());
+        //     }
+
+
+        //   }
+        // });    
 
         function mybutton6_clicked() {
 
 
 
-            //var License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
-            var License_all = ["鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rkk595", "豫rx2585"];
+           //var License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
+            var License_all = ["鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rkk595",  "豫rx2585"];
             // var License_all = ["鄂c9v670"];//109页
-            // var License_all = [  "豫rpc537"];//95页
-            // var License_all = [ "豫rdg697"];//176页
-            //var License_all = [ "豫rx2585"];//有问题
+           // var License_all = [  "豫rpc537"];//95页
+           // var License_all = [ "豫rdg697"];//176页
+           //var License_all = [ "豫rx2585"];//有问题
             let currentLicenseIndex = 0;
 
             function fetchDataForLicense(license) {
@@ -500,15 +948,15 @@
 
                             if (data.length > 0) {
                                 var thispoint = data.map(function (item) {
-                                    if (item.lng < 116) {
+                                    if(item.lng<116){
 
-                                        var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
-                                        var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值 
-
-                                        columnall.uptime.push(item.uptime);
-                                        columnall.id.push(item.id);
-                                        columnall.lng.push(lng);
-                                        columnall.lat.push(lat);
+                                    var lng = transform(item.lng, item.lat).bdLon;  // 获取当前元素的 lng 值
+                                    var lat = transform(item.lng, item.lat).bdLat;  // 获取当前元素的 lat 值 
+                                      
+                                    columnall.uptime.push(item.uptime);
+                                    columnall.id.push(item.id);
+                                    columnall.lng.push(lng);
+                                    columnall.lat.push(lat);
 
                                     }
 
@@ -524,7 +972,7 @@
                                 var points = [];
 
                                 for (var i = 0; i < columnall.lng.length; i += 10) {
-
+                              
                                     var point = new BMap.Point(columnall.lng[i], columnall.lat[i]);
                                     points.push(point);
                                 }
@@ -537,7 +985,7 @@
 
                                 // 递归调用
                                 offset += batchSize;
-                                fetchData();
+                               fetchData();
                                 columnall = {
                                     id: [],
                                     lng: [],
@@ -551,10 +999,10 @@
 
 
                                 Show_Tips("处理中请稍后,当前第 " + (currentLicenseIndex + 2) + " 个");
-
+                                
                                 // 当前表格的查询完成后，继续下一个表格的查询
                                 currentLicenseIndex++;
-
+                              
 
                                 if (currentLicenseIndex < License_all.length) {
                                     fetchDataForLicense(License_all[currentLicenseIndex]);
@@ -576,7 +1024,7 @@
 
             // 开始第一个表格的查询
             fetchDataForLicense(License_all[currentLicenseIndex]);
-            Show_Tips("处理中请稍后,当前第 1 个");
+             Show_Tips("处理中请稍后,当前第 1 个");
 
 
         }
@@ -643,30 +1091,14 @@
         }
 
         //http://localhost:8077/My_web/map_new.html
-        // 获取部分匹配下限的值
 
-        // 获取部分匹配下限的值
+
 
         function mybutton7_clicked() {
 
             if (markerList_autoNoinMarkerList.length != 0) {
 
-
-
-                // 获取部分匹配下限的值
-                BuFen_min = document.getElementById("BuFenpicker_1").value;
-                BuFen_max = document.getElementById("BuFenpicker_2").value;
-                //清空表格
-
-                tableBody.innerHTML = "";
-
-                //显示线路总长度（m）
-                var container = document.getElementById("bordered");
-                var text = (Distance_all / 1000).toFixed(3);
-                container.innerHTML = "线路总长度：" + text + "公里";
-
                 var License_all = ["鄂c9v670", "鄂c9v925", "新a34554", "新a34641", "新a34644", "豫rdg697", "豫rkk595", "豫rpc537", "豫rx2585"];
-                // var License_all = ["鄂c9v670"];
                 let currentLicenseIndex = 0;
 
                 function fetchDataForLicense(license) {
@@ -895,12 +1327,8 @@
 
 
                                     // Show_Tips("数据处理完毕", 1000);
-                                    var thisstr_removeDup = removeDuplicate(thisstr);
-                                    // console.log(thisstr_removeDup);//确保最后输出的数组内元素唯一
-                                    // for (let x = 0; x < thisstr_removeDup.length; x++) {
-                                    //     // console.log(thisstr_removeDup[x].lng,thisstr_removeDup[x].lat);
-                                    //     AddMark_inputcontainer1(thisstr_removeDup[x].lng, thisstr_removeDup[x].lat);
-                                    // }
+
+                                    console.log(removeDuplicate(thisstr));//确保最后输出的数组内元素唯一
 
                                     function removeDuplicate(data) {
                                         let uniqueIds = {}; // 用对象来存储唯一的id
@@ -916,141 +1344,20 @@
                                         return newData;
                                     }
 
-                                    function cleanAndSortTimeArray(arr) {
-                                        arr.sort((a, b) => {
-                                            return new Date(a.uptime) - new Date(b.uptime);
-                                        });
-
-                                        let result = [];
-                                        let group = [];
-                                        let prevTime = null;
-
-                                        for (let obj of arr) {
-                                            let currentTime = new Date(obj.uptime);
-                                            if (prevTime && (currentTime - prevTime) / 3600000 < 1) {//除以3600000是将ms转化为h  
-                                                group.push(obj);
-                                            } else {
-                                                if (group.length > 0) {
-                                                    result.push(group);
-                                                }
-                                                group = [obj];
-                                            }
-                                            prevTime = currentTime;
-                                        }
-
-                                        if (group.length > 0) {
-                                            result.push(group);
-                                        }
-
-                                        return result;
-                                    }
-
-
-
-
-
                                     Show_Tips("处理中请稍后,当前第 " + (currentLicenseIndex + 2) + " 个");
                                     // 当前表格的查询完成后，继续下一个表格的查询
                                     currentLicenseIndex++;
-
-                                    var thisst_uptime_clear_startend = [];
-
-
-
-                                    if (thisstr_removeDup.length != 0) {
-
-                                        //1传入时间数组，先按照时间排序，之后间隔60s 分到同一组
-                                        var thisst_uptime_clear = cleanAndSortTimeArray(thisstr_removeDup);
-                                        // console.log(thisst_uptime_clear);    //  时间排列好顺序分好组的时间数组
-                                        //计算匹配类型以及匹配度                                    
-
-                                        classifiedData_After.push(thisst_uptime_clear);
-
-
-
-
-                                        for (let x = 0; x < thisst_uptime_clear.length; x++) {
-                                            var travlleddistance = 0;//某段行驶里程
-                                            // var matcheddegree = 0;//某段匹配度
-                                            // var matchflag = 0;//某段匹配状态 0是部分匹配 1是全匹配
-
-                                            for (let k = 0; k < thisst_uptime_clear[x].length - 1; k++) {
-                                                travlleddistance += calculateDistance(thisst_uptime_clear[x][k].lng, thisst_uptime_clear[x][k].lat, thisst_uptime_clear[x][k + 1].lng, thisst_uptime_clear[x][k + 1].lat);
-                                            }
-
-                                            //计算匹配度
-                                            var PiPeidu = ((travlleddistance / Distance_all) * 100);
-                                            var PiPeiGongLishu = (travlleddistance / 1000).toFixed(3);
-
-
-                                            if (!isNaN(BuFen_max) && !isNaN(BuFen_min)) {
-
-                                                // if(BuFen_max>BuFen_min){ 
-
-                                                // if(BuFen_max>Distance_all){
-                                                //     BuFen_max=Distance_all;
-                                                //     document.getElementById("BuFenpicker_2").value = Distance_all;
-
-                                                // }
-
-                                                // if(BuFen_max<1 && BuFen_min<1){//匹配度区分
-                                                //计算完毕
-                                                if (PiPeidu > BuFen_max)//全匹配
-                                                    thisst_uptime_clear_startend.push(thisst_uptime_clear[x][0].uptime + "~" + thisst_uptime_clear[x][thisst_uptime_clear[x].length - 1].uptime + '\t全匹配   ' + (PiPeidu).toFixed(2) + '%  ' + PiPeiGongLishu + '公里');//  时间排列好顺序分好组的时间数组只有起始点
-                                                else {
-                                                    if (PiPeidu < BuFen_max && PiPeidu > BuFen_min) {
-                                                        thisst_uptime_clear_startend.push(thisst_uptime_clear[x][0].uptime + "~" + thisst_uptime_clear[x][thisst_uptime_clear[x].length - 1].uptime + '\t部分匹配 ' + (PiPeidu).toFixed(2) + '%  ' + PiPeiGongLishu + '公里');//  时间排列好顺序分好组的时间数组只有起始点
-                                                    }
-                                                }
-
-                                                // }
-                                                // if(BuFen_max>1 && BuFen_min>1)
-                                                // {//公里数区分
-                                                //     if (PiPeiGongLishu > BuFen_max)//全匹配
-                                                //            {
-                                                //             thisst_uptime_clear_startend.push(thisst_uptime_clear[x][0].uptime + "~" + thisst_uptime_clear[x][thisst_uptime_clear[x].length - 1].uptime + '\t全匹配   ' + (PiPeidu*100).toFixed(2) + '%  ' + PiPeiGongLishu + '公里');//  时间排列好顺序分好组的时间数组只有起始点
-                                                //            } 
-                                                //     else{
-                                                //         if(PiPeiGongLishu<BuFen_max && PiPeiGongLishu>BuFen_min){
-                                                //             thisst_uptime_clear_startend.push(thisst_uptime_clear[x][0].uptime + "~" + thisst_uptime_clear[x][thisst_uptime_clear[x].length - 1].uptime + '\t部分匹配 ' + (PiPeidu*100).toFixed(2) + '%  ' + PiPeiGongLishu + '公里');//  时间排列好顺序分好组的时间数组只有起始点
-                                                //             }
-                                                //         }
-
-                                                // }
-
-
-
-                                                // }else{
-                                                //     Show_Tips("上限小于下限！！",800);
-                                                // }
-
-
-                                            }
-                                            else {
-                                                Show_Tips("部分匹配上下限格式输入错误", 800);
-                                            }
-
-
-
-                                        }
-
-                                        //计算匹配类型以及匹配度——end
-                                        // var sjdikJ = thisst_uptime_clear_startend.join("\n");
-
-                                        // console.log(sjdikJ);
-
-                                        // console.log(thisst_uptime_clear);  
-                                        // console.log(thisst_uptime_clear_startend);
-                                        AddtableBody(currentLicenseIndex, License_all[currentLicenseIndex - 1], thisst_uptime_clear_startend);
+                                    if(removeDuplicate(thisstr).length!=0)
+                                    {
+                                        AddtableBody(currentLicenseIndex,License_all[currentLicenseIndex-1],"NULL","NULL","100%");
                                     }
-
+                                    
                                     if (currentLicenseIndex < License_all.length) {
                                         fetchDataForLicense(License_all[currentLicenseIndex]);
                                     } else {
                                         // 所有表格的查询完成后的一次性处理
                                         console.log("所有表格查询完成");
                                         Show_Tips("数据处理完毕", 1000);
-                                        originalData = document.getElementById('tableBody').innerHTML;
                                     }
                                 }
                             })
@@ -1075,276 +1382,19 @@
 
 
 
-        function mybutton8_clicked() {
 
 
 
-            var table = document.getElementById('tableBody');
-            var tableData = '';
 
-            // 获取表头
-            for (var i = 0; i < table.rows[0].cells.length; i++) {
-                tableData += table.rows[0].cells[i].textContent + '\t';
-            }
 
-            // 添加换行符
-            tableData += '\n';
-
-            // 获取表格数据
-            for (var i = 1; i < table.rows.length; i++) {
-                for (var j = 0; j < table.rows[i].cells.length; j++) {
-                    tableData += table.rows[i].cells[j].textContent + '\t';
-                }
-                tableData += '\n';
-            }
-
-            // 创建一个新的 Blob 对象
-            var blob = new Blob([tableData], { type: 'text/plain' });
-
-            // 创建一个链接
-            var a = document.createElement('a');
-            a.download = 'table_data.txt';
-            a.href = URL.createObjectURL(blob);
-
-            // 点击链接进行下载
-            a.click();
-
-        }
-
-
-
-
-        // 保存原始表格内容
-        var originalData = document.getElementById('tableBody').innerHTML;
-        const checkbox_1 = document.getElementById('checkbox1');
-        const checkbox_2 = document.getElementById('checkbox2');
-
-        checkbox_1.addEventListener('change', function () {
-
-
-            if (checkbox_1.checked && checkbox_2.checked) {
-                checkbox_1.disabled = false;
-                checkbox_2.disabled = false;
-                document.getElementById('tableBody').innerHTML = originalData;                //同时被选中");
-            }
-
-            // 仅全匹配
-            if (checkbox_1.checked && !checkbox_2.checked) {
-
-                var table = document.getElementById('tableBody');
-                var rows = table.getElementsByTagName('tr');
-
-                // 从最后一行开始遍历，以便正确删除行
-                for (var i = rows.length - 1; i > -1; i--) {
-                    var cell = rows[i].getElementsByTagName('td')[2];
-                    if (cell) {
-                        var email = cell.innerText || cell.textContent;
-
-                        // 删除特定内容为"全匹配"的行
-                        if (email.includes('部分匹配')) {
-
-                            const newContent = email.replace(/^.*部分匹配.*\n/gm, '');
-                            console.log(newContent)
-                            cell.innerText = newContent;
-                            // table.deleteRow(i);
-                            // break;  // 只删除第一个遇到的全匹配行
-                        }
-                    }
-                }
-                checkbox_1.disabled = true;
-            }
-
-            // 仅部分匹配
-            if (!checkbox_1.checked && checkbox_2.checked) {
-
-                var table = document.getElementById('tableBody');
-                var rows = table.getElementsByTagName('tr');
-
-                // 从最后一行开始遍历，以便正确删除行
-                for (var i = rows.length - 1; i > -1; i--) {
-                    var cell = rows[i].getElementsByTagName('td')[2];
-                    if (cell) {
-                        var email = cell.innerText || cell.textContent;
-
-                        // 删除特定内容为"全匹配"的行
-                        if (email.includes('全匹配')) {
-
-                            const newContent = email.replace(/^.*全匹配.*\n/gm, '');
-                            console.log(newContent)
-                            cell.innerText = newContent;
-                            // table.deleteRow(i);
-                            // break;  // 只删除第一个遇到的全匹配行
-                        }
-                    }
-                }
-
-                checkbox_2.disabled = true;
-            }
-
-        });
-
-
-
-        checkbox_2.addEventListener('change', function () {
-            if (checkbox_1.checked && checkbox_2.checked) {
-                checkbox_1.disabled = false;
-                checkbox_2.disabled = false;
-                document.getElementById('tableBody').innerHTML = originalData;                //同时被选中");
-            }
-
-            // 仅全匹配
-            if (checkbox_1.checked && !checkbox_2.checked) {
-
-                var table = document.getElementById('tableBody');
-                var rows = table.getElementsByTagName('tr');
-
-                // 从最后一行开始遍历，以便正确删除行
-                for (var i = rows.length - 1; i > -1; i--) {
-                    var cell = rows[i].getElementsByTagName('td')[2];
-                    if (cell) {
-                        var email = cell.innerText || cell.textContent;
-
-                        // 删除特定内容为"全匹配"的行
-                        if (email.includes('部分匹配')) {
-
-                            const newContent = email.replace(/^.*部分匹配.*\n/gm, '');
-                            console.log(newContent)
-                            cell.innerText = newContent;
-                            // table.deleteRow(i);
-                            // break;  // 只删除第一个遇到的全匹配行
-                        }
-                    }
-                }
-                checkbox_1.disabled = true;
-            }
-
-            // 仅部分匹配
-            if (!checkbox_1.checked && checkbox_2.checked) {
-
-                var table = document.getElementById('tableBody');
-                var rows = table.getElementsByTagName('tr');
-
-                // 从最后一行开始遍历，以便正确删除行
-                for (var i = rows.length - 1; i > -1; i--) {
-                    var cell = rows[i].getElementsByTagName('td')[2];
-                    if (cell) {
-                        var email = cell.innerText || cell.textContent;
-
-                        // 删除特定内容为"全匹配"的行
-                        if (email.includes('全匹配')) {
-
-                            const newContent = email.replace(/^.*全匹配.*\n/gm, '');
-                            console.log(newContent)
-                            cell.innerText = newContent;
-                            // table.deleteRow(i);
-                            // break;  // 只删除第一个遇到的全匹配行
-                        }
-                    }
-                }
-
-                checkbox_2.disabled = true;
-            }
-
-
-
-        });
-
-
-        const checkbox_3 = document.getElementById('checkbox3');
-        checkbox_3.addEventListener('change', function () {
-
-         
-                if (checkbox_3.checked) {   //显示曲线
-
-                    Flag_ShowRoad=1;
-              
-                }
-                else    //隐藏曲线
-                {
-                    Flag_ShowRoad=0;
-                   
-                }
-
-        });
-
-
-
-
-
-
-
-
-
-        // 保存原始表格内容
-        var originalData = document.getElementById('tableBody').innerHTML;
-
-        function deleteData() {
-            var table = document.getElementById('tableBody');
-            var rows = table.getElementsByTagName('tr');
-
-            // 从最后一行开始遍历，以便正确删除行
-            for (var i = rows.length - 1; i > 0; i--) {
-                var cell = rows[i].getElementsByTagName('td')[2];
-                if (cell) {
-                    var email = cell.innerText || cell.textContent;
-
-                    // 删除特定内容为"全匹配"的行
-                    if (email.includes('全匹配')) {
-
-                        const newContent = email.replace(/^.*全匹配.*\n/gm, '');
-                        console.log(newContent)
-                        cell.innerText = newContent;
-                        // table.deleteRow(i);
-                        // break;  // 只删除第一个遇到的全匹配行
-                    }
-                }
-            }
-        }
-        function deleteData1() {
-            var table = document.getElementById('tableBody');
-            var rows = table.getElementsByTagName('tr');
-
-            // 从最后一行开始遍历，以便正确删除行
-            for (var i = rows.length - 1; i > 0; i--) {
-                var cell = rows[i].getElementsByTagName('td')[2];
-                if (cell) {
-                    var email = cell.innerText || cell.textContent;
-
-                    // 删除特定内容为"全匹配"的行
-                    if (email.includes('部分匹配')) {
-
-                        const newContent = email.replace(/^.*部分匹配.*\n/gm, '');
-                        console.log(newContent)
-                        cell.innerText = newContent;
-                        // table.deleteRow(i);
-                        // break;  // 只删除第一个遇到的全匹配行
-                    }
-                }
-            }
-        }
-
-        function restoreData() {
-            document.getElementById('tableBody').innerHTML = originalData;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // 将按钮添加到页面中
+        document.body.appendChild(button);
+        // 将按钮添加到页面中
+        document.body.appendChild(button1);
+        document.body.appendChild(button2);
+        document.body.appendChild(button3);
+        document.body.appendChild(button4);
+        document.body.appendChild(button5);
 
 
 
@@ -1527,16 +1577,16 @@
         // 创建地图函数
         function createMap() {
             // 如果地图对象不存在，创建地图
-            map = new BMap.Map("map");
+            map = new BMap.Map("container");
             map.centerAndZoom(new BMap.Point(105, 35), 6);
             map.addControl(new BMap.NavigationControl());               // 添加平移缩放控件
             map.addControl(new BMap.ScaleControl());                    // 添加比例尺控件
             map.addControl(new BMap.OverviewMapControl());              // 添加缩略地图控件
             map.enableScrollWheelZoom(true);
             // 初始化地图大小
-            // resizeMap();
-            // // 监听窗口大小变化事件，以动态调整地图大小
-            // window.addEventListener("resize", resizeMap);
+            resizeMap();
+            // 监听窗口大小变化事件，以动态调整地图大小
+            window.addEventListener("resize", resizeMap);
         }
 
 
@@ -2097,7 +2147,7 @@
 
         // 自适应地图大小
         function resizeMap() {
-            var container = document.getElementById("map");
+            var container = document.getElementById("container");
             var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
             var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
             container.style.width = viewportWidth + "px";
@@ -2291,22 +2341,12 @@
                     }
 
                     if (isShiftPressed == false) {
-
-                        var totalDistance = 0;
                         for (var i = 0; i < markerList_autoNoinMarkerList.length; i++) {
                             var start = new BMap.Point(markerList[markerList_autoNoinMarkerList[i] - 1].point.lng, markerList[markerList_autoNoinMarkerList[i] - 1].point.lat);
                             var end = new BMap.Point(markerList[markerList_autoNoinMarkerList[i]].point.lng, markerList[markerList_autoNoinMarkerList[i]].point.lat);
-
-                            getNavigationPoints_ForCalculateddistance(start, end, function (distance) {
-                                totalDistance += distance; // 将获取到的距离累加到 totalDistance 变量中
-
-                                Distance_all = totalDistance;
-
-
-                            });
+                            getNavigationPoints(start, end);
+                            // console.log(markerList_autoNoinMarkerList[markerList_autoNoinMarkerList.length-1]);
                         }
-
-
                     } else {
                         for (var i = 0; i < markerList_shouNoinMarkerList.length; i++) {
                             var startPoint_shou = new BMap.Point(markerList[markerList_shouNoinMarkerList[i] - 1].point.lng, markerList[markerList_shouNoinMarkerList[i] - 1].point.lat);
@@ -2384,13 +2424,13 @@
                         var path = route.getPath(); // 获取导航路线上的所有道路点
 
                         //输出导航路线上的道路点信息
-                        // for (var i = 0; i < path.length; i++) {
-                        //     var point = path[i];
+                        for (var i = 0; i < path.length; i++) {
+                            var point = path[i];
 
-                        //     // console.log("道路点：" + point.lng + "," + point.lat); 
-                        //     // AddMark(point.lng,point.lat);
+                            // console.log("道路点：" + point.lng + "," + point.lat); 
+                            // AddMark(point.lng,point.lat);
 
-                        // }
+                        }
 
                         // console.log(path.length);
                         DrawRoute(path);
@@ -2401,42 +2441,6 @@
             // 开始导航
             driving.search(startPoint, endPoint); // 开始进行起点到终点的导航
         }
-
-
-
-
-        function getNavigationPoints_ForCalculateddistance(startPoint, endPoint, callback) {
-
-            // 调用导航服务
-            var driving = new BMap.DrivingRoute(map, {
-                onSearchComplete: function (results) {
-                    if (driving.getStatus() === BMAP_STATUS_SUCCESS) {
-                        var plan = results.getPlan(0);
-                        var route = plan.getRoute(0);
-                        var path = route.getPath();
-                        var Distance_Liangdiandaohang = 0;//输出导航路线上的道路点信息(其中包括起点终点)
-                        for (var i = 0; i < path.length - 1; i++) {
-                            Distance_Liangdiandaohang += calculateDistance(path[i].lng, path[i].lat, path[i + 1].lng, path[i + 1].lat);
-                        }
-
-                        //console.log(Distance_Liangdiandaohang);
-                        callback(Distance_Liangdiandaohang); // 调用回调函数，将距离作为参数传递出去
-                        DrawRoute(path);
-                    }
-                }
-            });
-
-            // 开始导航
-            driving.search(startPoint, endPoint);
-
-
-        }
-
-
-
-
-
-
 
         function AddMark(lng, lat) {
 
@@ -2469,9 +2473,12 @@
             // 添加谷歌marker和label
             var markergg = new BMap.Marker(ggPoint);
             map.addOverlay(markergg); // 添加谷歌marker
+
+
+
+
             markergg.setLabel(labelgg); // 添加label
             map.setCenter(markergg);
-            map.panTo(ggPoint);
 
         }
 
@@ -2578,20 +2585,16 @@
             }
 
             // 创建连线，并设置样式
-            polyline_ResultsDisplay = new BMap.Polyline(coordinates, {
+            var polyline = new BMap.Polyline(coordinates, {
                 strokeColor: strokeColor,
                 strokeWeight: 6,
-                strokeOpacity: 0.6
+                strokeOpacity: 1
             });
 
             // 将连线添加到地图上
-            map.addOverlay(polyline_ResultsDisplay);
+            map.addOverlay(polyline);
 
         }
-
-
-
-
 
 
     </script>
@@ -2601,4 +2604,3 @@
 
 
 <!-- 输出 无满足的 逻辑有问题 -->
-<!-- 上下限没写好 -->

@@ -1,265 +1,496 @@
-
 /* 提示框 */
 .modal {
-display: none; /* 初始时隐藏模态框 */
+  display: none;
+  /* 初始时隐藏模态框 */
 }
+
 .modal-content {
 
-background-color: rgba(254, 254, 254, 0.6); /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
-margin: auto;
-padding: 10px;
-border: 5px solid #888;
-height: 50px;
-width: 18%;
-position: absolute;
-left: 50%;
-top: 20%;
-transform: translate(-50%, -50%);
-text-align: center;
-font-size: 24px;
-justify-content: center; 
-align-items: center;
-line-height: 50px;
+  background-color: rgba(254, 254, 254, 0.6);
+  /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+  margin: auto;
+  padding: 10px;
+  border: 5px solid #888;
+  height: 50px;
+  width: 18%;
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 24px;
+  justify-content: center;
+  align-items: center;
+  line-height: 50px;
 }
 
 .close {
-color: #aaaaaa;
-float: right;
-font-size: 28px;
-font-weight: bold;
-cursor: pointer;
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .close:hover,
 .close:focus {
-color: #000;
-text-decoration: none;
-cursor: pointer;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 
 
 /* 日期选择 */
 .datepicker-container {
-position: absolute;
-top:4%;
-left: 20%;
-transform: translate(-50%, -50%);
-text-align: center;
-background-color: rgb(255, 255, 255, 0.1); /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+  position: fixed;
+  top: 4%;
+  left: 12%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background-color: rgb(255, 255, 255, 0.1);
+  /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+}
+
+/* 上下限选择 */
+.BuFenpicker-container {
+  position: fixed;
+  top: 4%;
+  right: 19%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background-color: rgb(255, 255, 255, 0.1);
+  /* 使用 rgba 表示颜色，最后一个值为透明度（0-1之间） */
+}
+
+.input-BuFenpicker {
+  width: 50px;
+  font-size: 14px;
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+
+}
+
+/* 上下限选择复选框 */
+/* 隐藏默认的复选框 */
+input[type="checkbox"] {
+  display: none;
+}
+
+/* 开关的样式 */
+.switch {
+  display: inline-block;
+  margin-right: 10px;
+  /* 添加间距以分隔开关 */
+}
+
+/* 开关的滑块 */
+.slider {
+  position: relative;
+  width: 55px;
+  height: 25px;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: .4s;
+}
+
+/* 开关的滑块的圆形按钮 */
+.slider::before {
+  position: absolute;
+  content: "关";
+  height: 18px;
+  width: 18px;
+  top: 4px;
+  left: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+/* 复选框选中时的样式 */
+input[type="checkbox"]:checked+.slider {
+  background-color: #2196F3;
+}
+
+/* 复选框选中时滑块按钮的位置 */
+input[type="checkbox"]:checked+.slider::before {
+  transform: translateX(28px);
+  content: "开";
+}
+
+/* 容器的样式 */
+.switch-container {
+  position: fixed;
+  top: 7%;
+  right: 5%;
+  opacity: 0.8;
+  font-size: 12px;
+  text-align: center;
+  /* 设置容器的层级，使其覆盖其他元素 */
 }
 
 
-/* 表格 */
-    #transparent-table {
-        position: absolute;
-        top: 80px; /* 设置表格距离地图顶部的距离 */
-        right: 1%; /* 设置表格距离地图左侧的距离 */
-        background-color: rgba(255, 255, 255, 0.5); /* 设置表格背景色为半透明 */
-        border-collapse: collapse;
-        z-index: 999; /* 设置表格在地图上的层级 */
-    }
-    #transparent-table th,
-    #transparent-table td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: left;
-    }
+
+
+/* 容器的样式 */
+.switch-container1 {
+  position: fixed;
+  top: 7%;
+  right: 27.5%;
+  opacity: 0.8;
+  font-size: 12px;
+  text-align: center;
+  /* 设置容器的层级，使其覆盖其他元素 */
+}
+
 
 
 /* <!-- 下拉框 --> */
 
-    select {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    font-size: 18px;
-    color:rgb(255, 255, 255);
-    width: 120px;
-    height: 30px;
-    border: 2px solid #109217;
-    position: fixed; /* 使用 fixed 将下拉选择框固定在视口中 */
-    top: 20px; /* 调整距离顶部的位置 */
-    left: 50%; /* 将选择框水平居中 */
-    transform: translateX(-50%); /* 通过 transform 居中 */
-    background-color: rgba(26, 188, 156, 0.8); /* 半透明白色背景 */
-    }
-    
-            /* 设置第一个下拉框的垂直位置 */
-        #fruitSelect_1 {
-    left: 30%;
-    }
+select {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  font-size: 18px;
+  color: rgb(255, 255, 255);
+  width: 120px;
+  height: 30px;
+  border: 2px solid #109217;
+  position: fixed;
+  /* 使用 fixed 将下拉选择框固定在视口中 */
+  top: 20px;
+  /* 调整距离顶部的位置 */
+  left: 50%;
+  /* 将选择框水平居中 */
+  transform: translateX(-50%);
+  /* 通过 transform 居中 */
+  background-color: rgba(26, 188, 156, 0.8);
+  /* 半透明白色背景 */
+}
 
-    /* 设置第二个下拉框的垂直位置 */
-    #fruitSelect_2 {
-    left: 40%;
-    }
+/* 设置第一个下拉框的垂直位置 */
+#fruitSelect_1 {
+  left: 23%;
+}
 
-     /* 设置第三个下拉框的垂直位置 */
-      #fruitSelect_3 {
-    left: 50%;
-    }
+/* 设置第二个下拉框的垂直位置 */
+#fruitSelect_2 {
+  left: 31%;
+}
 
-     /* 设置第4个下拉框的垂直位置 */
-     #fruitSelect_4 {
-    left: 60%;
-    }
+/* 设置第三个下拉框的垂直位置 */
+#fruitSelect_3 {
+  left: 39%;
+}
 
-    /* 设置第5个下拉框的垂直位置 */
-    #fruitSelect_5 {
-    left: 70%;
-    }
+/* 设置第4个下拉框的垂直位置 */
+#fruitSelect_4 {
+  left: 47%;
+}
+
+/* 设置第5个下拉框的垂直位置 */
+#fruitSelect_5 {
+  left: 55%;
+}
 
 /* </style>        
 
 <!-- 输入框 -->
 <style> */
 .input-container {
-position: fixed;
-top: 20px; /* 调整为适合的位置 */
-left: 80%; /* 调整为适合的位置 */
-display: flex;
-align-items: center;
-width: 300px;
+  position: fixed;
+  top: 2%;
+  /* 调整为适合的位置 */
+  left: 80%;
+  /* 调整为适合的位置 */
+  display: flex;
+  align-items: center;
+  width: 300px;
 }
 
 .input-field {
-flex: 1;
-padding: 10px;
-border: 1px solid #ccc;
-border-radius: 5px;
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .input-label {
-position: absolute;
-top: 50%;
-left: 10px;
-transform: translateY(-50%);
-pointer-events: none;
-color: rgba(0,0,0,0.5);
-transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
 }
 
-.input-field:focus + .input-label,
-.input-field:not(:placeholder-shown) + .input-label {
-top: 0;
-font-size: 12px;
-color: #000;
+.input-field:focus+.input-label,
+.input-field:not(:placeholder-shown)+.input-label {
+  top: 0;
+  font-size: 12px;
+  color: #000;
 }
 
 .input-button {
-padding: 8px 12px;
-background-color: #007bff;
-color: #fff;
-border: none;
-border-radius: 5px;
-margin-left: 10px;
-cursor: pointer;
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
 }
+
 /* </style> */
 
-.container {
-    position: fixed;
-          top: 10%;
-          right: 2%;
-          width: 370px;
-          height: 85%;
-          overflow-y: scroll;
-          border: 3px solid rgb(158, 158, 158);
-        border-collapse: collapse;
-        box-shadow: 0px 2px 10px rgba(2, 0, 3,0.5);
-      }
-      table, th, td {
-          border: 1px solid rgb(19, 69, 161);
-          border-collapse: collapse;
-          padding: 5px;
-          text-align: center;
-      }
 
-      .mybutton6 {
-        position: fixed;
-        top: 450px;
-        left: 80px;
-        z-index: 9999;
-        background-color: #4CAF50;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-        opacity: 0.7;
-    }
-    .mybutton6:active {
-        background-color: #3e8e41;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
-    }
 
-    .mybutton7 {
-        position: fixed;
-        top: 500px;
-        left: 80px;
-        z-index: 9999;
-        background-color: #4CAF50;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-        opacity: 0.7;
-    }
-    .mybutton7:active {
-        background-color: #3e8e41;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
-    }
 
+
+
+
+
+/* 表格 */
+
+.tableBodycontainer {
+  position: fixed;
+  top: 11%;
+  right: 0.5%;
+  width: 30%;
+  height: 87%;
+  overflow-y: scroll;
+  border: 3px solid rgb(158, 158, 158);
+  border-collapse: collapse;
+  box-shadow: 0px 2px 10px rgba(2, 0, 3, 0.5);
+  font-size: 12px;
+
+
+
+}
+
+table,
+th,
+td {
+  border: 1px solid rgb(19, 69, 161);
+  border-collapse: collapse;
+  padding: 5px;
+  text-align: center;
+  table-layout: fixed;
+  white-space: pre-wrap;
+  overflow: hidden;
+  /* white-space: nowrap; */
+
+}
+
+.mybutton0 {
+  position: fixed;
+  top: 10%;
+  left: 3%;
+  z-index: 9999;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
+
+.mybutton0:active {
+  background-color: #3e8e41;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+}
+
+.mybutton1 {
+  position: fixed;
+  top: 15%;
+  left: 3%;
+  z-index: 9999;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
+
+.mybutton1:active {
+  background-color: #3e8e41;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+}
+
+.mybutton2 {
+  position: fixed;
+  top: 20%;
+  left: 3%;
+  z-index: 9999;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
+
+.mybutton2.active {
+  background-color: #3e8e41;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+  opacity: 1;
+}
+
+.mybutton6 {
+  position: fixed;
+  top: 25%;
+  left: 3%;
+  z-index: 9999;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
+
+.mybutton6:active {
+  background-color: #3e8e41;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+}
+
+.mybutton7 {
+  position: fixed;
+  top: 30%;
+  left: 3%;
+  z-index: 9999;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
+
+.mybutton7:active {
+  background-color: #3e8e41;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+}
+
+
+
+.mybutton8 {
+  position: fixed;
+  top: 7%;
+  right: 3.3%;
+  z-index: 9999;
+  border: none;
+  color: white;
+  padding: 5px 5px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 2px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.8;
+}
+
+.mybutton8:active {
+  
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 1) inset;
+}
 
 /* 二选一 */
 #choose {
-    position: absolute;
-    top: 5%;
-    right: -1%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 1px 1px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 8px;
-    font-weight: bold;
-    
-  }
-  
-  h1,
-  p {
-    margin: 0;
-  }
-  
-  input[type='radio'] {
-    display: none;
-  }
-  
-  .label-container label {
-    cursor: pointer;
-    display: inline-block;
-    margin-bottom: 1px;
-    background-color: #eee;
-    padding: 10px 10px;
-    border-radius: 5px;
-  }
-  
-  .label-container input[type='radio']:checked+label {
-    background-color: #2196f3;
-    color: #fff;
-  }
+  position: fixed;
+  top: 5%;
+  right: -1%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 1px 1px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 8px;
+  font-weight: bold;
+
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+input[type='radio'] {
+  display: none;
+}
+
+.label-container label {
+  cursor: pointer;
+  display: inline-block;
+  margin-bottom: 1px;
+  background-color: #eee;
+  padding: 10px 10px;
+  border-radius: 5px;
+}
+
+.label-container input[type='radio']:checked+label {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+/* 文字标签 */
+.bordered {
+  position: fixed;
+  top: 7%;
+  right: 14%;
+  display: block;
+  border: 1px solid black;
+  padding: 10px;
+  z-index: 9999;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.8;
+}
